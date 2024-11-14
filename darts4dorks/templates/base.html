@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    {% if title %}
+      <title>{{ title }} - Darts for Dorks</title>
+    {% else %}
+      <title>Darts for Dorks</title>
+    {% endif %}
+  </head>
+  <body>
+      <div>
+        Darts for Dorks:
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('login') }}">Login</a>
+      </div>
+      <hr>
+      {% if get_flashed_messages() %}
+        <ul>
+            {% for message in get_flashed_messages() %}
+              <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+  </body>
+</html>
