@@ -1,13 +1,12 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from darts4dorks import app, db
-from darts4dorks.models import User, Session
+from darts4dorks import app
 
 
 # Defines commands in 'flask shell' REPL
 @app.shell_context_processor
 def make_shell_context():
-    return {'sa': sa, 'so': so, 'db': db, 'User': User, 'Session': Session}
+    return {'sa': sa, 'so': so}
 
 
 if __name__ == '__main__':
