@@ -53,4 +53,4 @@ class UpdateAccountForm(FlaskForm):
         if email.data != current_user.email:
             user = db.session.scalar(select(User).where(User.email == email.data))
             if user:
-                raise ValidationError("Please us a different email address.")
+                raise ValidationError("Please use a different email address.")

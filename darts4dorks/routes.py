@@ -26,7 +26,7 @@ def login():
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
             next_page = url_for("index")
-        return redirect(url_for("index"))
+        return redirect(next_page)
     return render_template("login.html", title="Sign In", form=form)
 
 
@@ -71,3 +71,9 @@ def update_account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     return render_template("update_account.html", title="Update Account", form=form)
+
+
+@app.route("/test_error")
+def test_error():
+    app.logger.error("This is a test error for email logging!")
+    return "Error logged."
