@@ -6,6 +6,7 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_mail import Mail
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -13,6 +14,7 @@ db = SQLAlchemy(app, add_models_to_shell=True)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
+mail = Mail(app)
 
 if not app.debug:
     if app.config["MAIL_SERVER"]:
@@ -45,7 +47,6 @@ if not app.debug:
     )
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
-
     app.logger.setLevel(logging.INFO)
     app.logger.info("Darts for Dorks startup")
 

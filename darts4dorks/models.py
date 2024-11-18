@@ -1,10 +1,12 @@
+import jwt
 from datetime import datetime
+from time import time
 from hashlib import md5
 from sqlalchemy import String, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, WriteOnlyMapped
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from darts4dorks import db, login_manager
+from darts4dorks import app, db, login_manager
 
 
 class User(db.Model, UserMixin):
@@ -16,6 +18,9 @@ class User(db.Model, UserMixin):
 
     sessions: WriteOnlyMapped["Session"] = relationship(back_populates="owner")
 
+    def __repr__(self):
+        return f"<User {self.id}, {self.username}, {self.created}>"
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -26,8 +31,20 @@ class User(db.Model, UserMixin):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
         return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
 
-    def __repr__(self):
-        return f"<User {self.id}, {self.username}, {self.created}>"
+    def get_password_reset_token(self, expires_in=600):
+        return jwt.encode(
+            {"reset_password": self.id, "exp": time() + expires_in},
+            app.config["SECRET_KEY"],
+            algorithm="HS256",
+        )
+    
+    @staticmethod
+    def verify_passowrd_reset_token(token):
+        try:
+            id = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])["reset_password"]
+        except:
+            return None
+        return db.session.get(User, id)
 
 
 @login_manager.user_loader
@@ -53,8 +70,8 @@ class Session(db.Model):
 
 class Attempt(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    target: Mapped[int] = mapped_column()  # SB = 21, DB = 22
-    darts_thrown: Mapped[int] = mapped_column()
+    target: Mapped[int]  # SB = 21, DB = 22
+    darts_thrown: Mapped[int]
     session_id: Mapped[int] = mapped_column(ForeignKey(Session.id), index=True)
 
     session: Mapped[Session] = relationship(back_populates="attempts")

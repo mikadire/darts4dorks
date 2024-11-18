@@ -3,8 +3,15 @@ from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import select
 from urllib.parse import urlsplit
 from darts4dorks import app, db
-from darts4dorks.forms import LoginForm, RegistrationForm, UpdateAccountForm
+from darts4dorks.forms import (
+    LoginForm,
+    RegistrationForm,
+    UpdateAccountForm,
+    ResetPasswordRequestForm,
+    ResetPasswordForm,
+)
 from darts4dorks.models import User
+from darts4dorks.email import send_password_reset_email
 
 
 @app.route("/")
@@ -71,6 +78,39 @@ def update_account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     return render_template("update_account.html", title="Update Account", form=form)
+
+
+@app.route("/reset_password_request", methods=["GET", "POST"])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = db.session.scalar(select(User).where(User.email == form.email.data))
+        if user:
+            send_password_reset_email(user)
+        flash("Check your email for the instructions to reset your password.")
+        return redirect(url_for("login"))
+    return render_template(
+        "reset_password_request.html", title="Reset Password", form=form
+    )
+
+
+@app.route("/reset_password<token>", methods=["GET", "POST"])
+def reset_password(token):
+    if current_user.is_authenticated:
+        flash("That is an invalid or expired token.", "warning")
+        return redirect(url_for("index"))
+    user = User.verify_passowrd_reset_token(token)
+    if not user:
+        return redirect(url_for("index"))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash("Your password has been reset.")
+        return redirect(url_for("login"))
+    return render_template("reset_password.html", form=form)
 
 
 @app.route("/test_error")

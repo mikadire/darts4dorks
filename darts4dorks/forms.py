@@ -54,3 +54,16 @@ class UpdateAccountForm(FlaskForm):
             user = db.session.scalar(select(User).where(User.email == email.data))
             if user:
                 raise ValidationError("Please use a different email address.")
+
+
+class ResetPasswordRequestForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Request Password Reset")
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField("Password", validators=[DataRequired()])
+    confirm_password = PasswordField(
+        "Confirm Password", validators=[DataRequired(), EqualTo("password")]
+    )
+    submit = SubmitField("Reset Password")
