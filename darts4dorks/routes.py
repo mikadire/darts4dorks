@@ -1,4 +1,4 @@
-from flask import render_template, url_for, redirect, flash, request
+from flask import render_template, url_for, redirect, flash, request, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import select
 from urllib.parse import urlsplit
@@ -10,8 +10,14 @@ from darts4dorks.forms import (
     ResetPasswordRequestForm,
     ResetPasswordForm,
 )
-from darts4dorks.models import User
+from darts4dorks.models import User, Attempt
 from darts4dorks.email import send_password_reset_email
+
+
+@app.route("/test_error")
+def test_error():
+    app.logger.error("This is a test error for email logging!")
+    return "Error logged."
 
 
 @app.route("/")
@@ -29,6 +35,7 @@ def login():
         user = db.session.scalar(select(User).where(User.email == form.email.data))
         if user is None or not user.verify_password(form.password.data):
             flash("Invalid username or password.", "danger")
+            return redirect(url_for("login"))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
@@ -96,13 +103,13 @@ def reset_password_request():
     )
 
 
-@app.route("/reset_password<token>", methods=["GET", "POST"])
+@app.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     if current_user.is_authenticated:
-        flash("That is an invalid or expired token.", "warning")
         return redirect(url_for("index"))
     user = User.verify_passowrd_reset_token(token)
     if not user:
+        flash("That is an invalid or expired token.", "warning")
         return redirect(url_for("index"))
     form = ResetPasswordForm()
     if form.validate_on_submit():
@@ -113,7 +120,40 @@ def reset_password(token):
     return render_template("reset_password.html", form=form)
 
 
-@app.route("/test_error")
-def test_error():
-    app.logger.error("This is a test error for email logging!")
-    return "Error logged."
+@app.route("/round_the_clock", methods=["GET"])
+@login_required
+def round_the_clock():
+    result = current_user.get_active_session_and_target()
+    if result is None:
+        session = current_user.create_session()
+        target = 1
+    else:
+        session, target = result
+        target += 1
+        flash("You had an existing game going.")
+        if not target:
+            target = 1
+    return render_template(
+        "round_the_clock.html",
+        title="Round the Clock",
+        session_id=session.id,
+        target=target,
+    )
+
+
+@app.route("/attempt", methods=["POST"])
+@login_required
+def attempt():
+    data = request.get_json()
+    attempt = Attempt(
+        target=data["target"],
+        darts_thrown=data["darts_thrown"],
+        session_id=data["session_id"],
+    )
+    db.session.add(attempt)
+    try:
+        db.session.commit()
+        return jsonify({"success": True, "message": "Attempt successfully saved."}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
