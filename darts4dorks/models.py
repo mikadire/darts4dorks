@@ -4,9 +4,10 @@ from time import time
 from hashlib import md5
 from sqlalchemy import String, ForeignKey, func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship, WriteOnlyMapped
+from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from darts4dorks import app, db, login_manager
+from darts4dorks import db, login_manager
 
 
 class User(db.Model, UserMixin):
@@ -68,14 +69,14 @@ class User(db.Model, UserMixin):
     def get_password_reset_token(self, expires_in=600):
         return jwt.encode(
             {"reset_password": self.id, "exp": time() + expires_in},
-            app.config["SECRET_KEY"],
+            current_app.config["SECRET_KEY"],
             algorithm="HS256",
         )
 
     @staticmethod
     def verify_passowrd_reset_token(token):
         try:
-            id = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])[
+            id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])[
                 "reset_password"
             ]
         except:
