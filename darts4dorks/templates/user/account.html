@@ -5,7 +5,7 @@
       <tr valign="top">
           <td><img src="{{ current_user.avatar(128) }}"></td>
           <td><h1>User: {{ current_user.username }}</h1></td>
-          <p><a href="{{ url_for('update_account') }}">Update your account</a></p>
+          <p><a href="{{ url_for('user.update_account') }}">Update your account</a></p>
       </tr>
   </table>
 {% endblock %}
