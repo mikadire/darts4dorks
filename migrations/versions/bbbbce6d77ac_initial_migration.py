@@ -1,8 +1,8 @@
-"""Initial migration (redo)
+"""initial migration
 
-Revision ID: 5b956254dfd2
+Revision ID: bbbbce6d77ac
 Revises: 
-Create Date: 2024-11-16 17:31:02.143421
+Create Date: 2024-11-22 16:41:20.269827
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5b956254dfd2'
+revision = 'bbbbce6d77ac'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,7 +27,6 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_user_created'), ['created'], unique=False)
         batch_op.create_index(batch_op.f('ix_user_email'), ['email'], unique=True)
         batch_op.create_index(batch_op.f('ix_user_username'), ['username'], unique=True)
 
@@ -41,7 +40,6 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('session', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_session_start_time'), ['start_time'], unique=False)
         batch_op.create_index(batch_op.f('ix_session_user_id'), ['user_id'], unique=False)
 
     op.create_table('attempt',
@@ -66,13 +64,11 @@ def downgrade():
     op.drop_table('attempt')
     with op.batch_alter_table('session', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_session_user_id'))
-        batch_op.drop_index(batch_op.f('ix_session_start_time'))
 
     op.drop_table('session')
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_user_username'))
         batch_op.drop_index(batch_op.f('ix_user_email'))
-        batch_op.drop_index(batch_op.f('ix_user_created'))
 
     op.drop_table('user')
     # ### end Alembic commands ###

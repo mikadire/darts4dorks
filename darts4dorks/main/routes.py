@@ -1,8 +1,8 @@
-from flask import render_template, flash, request, jsonify
+from flask import render_template, flash, request, jsonify, url_for
 from flask_login import current_user, login_required
 from darts4dorks import db
 from darts4dorks.main import bp
-from darts4dorks.models import Attempt
+from darts4dorks.models import Session, Attempt
 
 
 @bp.route("/")
@@ -11,7 +11,7 @@ def index():
     return render_template("index.html")
 
 
-@bp.route("/round_the_clock", methods=["GET"])
+@bp.route("/round_the_clock")
 @login_required
 def round_the_clock():
     result = current_user.get_active_session_and_target()
@@ -19,11 +19,12 @@ def round_the_clock():
         session = current_user.create_session()
         target = 1
     else:
-        session, target = result
-        target += 1
         flash("You had an existing game going.")
-        if not target:
+        session, target = result
+        if target is None:
             target = 1
+        else:
+            target += 1
     return render_template(
         "round_the_clock.html",
         title="Round the Clock",
@@ -48,3 +49,19 @@ def attempt():
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@bp.route("/redirect_game_over", methods=["POST"])
+def redirect_game_over():
+    data = request.get_json()
+    session = db.session.get(Session, data["session_id"])
+    session.ended = True
+    db.session.commit()
+    
+    url = url_for("main.game_over")
+    return jsonify({"redirected": True, "url": url})
+
+
+@bp.route("/game_over")
+def game_over():
+    return render_template("game_over.html")

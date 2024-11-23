@@ -111,7 +111,7 @@ class Session(db.Model):
 
 class Attempt(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    target: Mapped[int]  # SB = 21, DB = 22
+    target: Mapped[int]
     darts_thrown: Mapped[int]
     session_id: Mapped[int] = mapped_column(ForeignKey(Session.id), index=True)
 
