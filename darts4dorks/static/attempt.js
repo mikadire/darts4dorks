@@ -37,27 +37,29 @@ document.addEventListener('DOMContentLoaded', () => {
             })
 
             if (!response.ok) {
+                const errorData = await response.json();
                 throw new Error(`Response status: ${response.status}, 
-                    Error: ${respone.message}`);
+                    Error: ${errorData.message}`);
             }
+
+            target += 1;
+
+            if (target === 22) {
+                console.log('Game Over');
+                endGame();
+            } else if (target === 21) {
+                targetElement.textContent = 'Bull';
+            } else {
+                targetElement.textContent = target;
+            }
+
+            input.value = '';
+            input.focus();
 
         } catch (error) {
             console.error(error.message);
+            errorMessage.textContent = `An error has occurred. Please try again.`;
         }
-
-        target += 1;
-
-        if (target === 22) {
-            console.log('Game Over');
-            endGame();
-        } else if (target === 21) {
-            targetElement.textContent = 'Bull';
-        } else {
-            targetElement.textContent = target;
-        }
-
-        input.value = '';
-        input.focus();
     }
 
     async function endGame() {
@@ -69,17 +71,19 @@ document.addEventListener('DOMContentLoaded', () => {
             })
 
             if (!response.ok) {
+                const errorData = await response.json();
                 throw new Error(`Response status: ${response.status}, 
-                    Error: ${respone.message}`);
+                    Error: ${errorData.message}`);
             }
             
             const result = await response.json();
-            if (result.redirected) {
+            if (result.success) {
                 window.location.replace(result.url);
             }
 
         } catch (error) {
             console.error(error.message);
+            errorMessage.textContent = `An error has occurred. Please try again.`;
         }
     }
 })

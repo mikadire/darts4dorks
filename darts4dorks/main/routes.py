@@ -1,4 +1,4 @@
-from flask import render_template, flash, request, jsonify, url_for
+from flask import render_template, flash, request, url_for
 from flask_login import current_user, login_required
 from darts4dorks import db
 from darts4dorks.main import bp
@@ -40,7 +40,7 @@ def round_the_clock():
 
 @bp.route("/submit_attempt", methods=["POST"])
 @login_required
-def attempt():
+def submit_attempt():
     data = request.get_json()
     attempt = Attempt(
         target=data["target"],
@@ -48,12 +48,13 @@ def attempt():
         session_id=data["session_id"],
     )
     db.session.add(attempt)
+
     try:
         db.session.commit()
-        return jsonify({"success": True, "message": "Attempt successfully saved."}), 201
+        return {"success": True, "message": "Attempt successfully saved."}, 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "message": str(e)}), 500
+        return {"success": False, "message": str(e)}, 500
 
 
 @bp.route("/redirect_game_over", methods=["POST"])
@@ -61,10 +62,15 @@ def redirect_game_over():
     data = request.get_json()
     session = db.session.get(Session, data["session_id"])
     session.ended = True
-    db.session.commit()
 
-    url = url_for("main.game_over")
-    return jsonify({"redirected": True, "url": url})
+    try:
+        db.session.commit()
+        url = url_for("main.game_over")
+        return {"success": True, "url": url}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"success": False, "message": str(e)}, 500
+
 
 
 @bp.route("/game_over")
