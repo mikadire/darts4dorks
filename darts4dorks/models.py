@@ -2,7 +2,7 @@ import jwt
 from datetime import datetime
 from time import time
 from hashlib import md5
-from sqlalchemy import String, ForeignKey, func, select
+from sqlalchemy import String, ForeignKey, UniqueConstraint,func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship, WriteOnlyMapped
 from flask import current_app
 from flask_login import UserMixin
@@ -101,6 +101,10 @@ class Attempt(db.Model):
     session_id: Mapped[int] = mapped_column(ForeignKey(Session.id), index=True)
 
     session: Mapped[Session] = relationship(back_populates="attempts")
+
+    __table_args__ = (
+        UniqueConstraint("target", "session_id", name="unique_target_per_session"),
+    )
 
     def __repr__(self):
         return (
