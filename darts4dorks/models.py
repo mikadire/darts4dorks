@@ -2,7 +2,7 @@ import jwt
 from datetime import datetime
 from time import time
 from hashlib import md5
-from sqlalchemy import String, ForeignKey, UniqueConstraint,func, select
+from sqlalchemy import String, ForeignKey, UniqueConstraint, func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship, WriteOnlyMapped
 from flask import current_app
 from flask_login import UserMixin
@@ -41,7 +41,6 @@ class User(db.Model, UserMixin):
         db.session.commit()
         return session
 
-
     def get_active_session_and_target(self):
         query = (
             select(Session, Attempt.target)
@@ -61,9 +60,9 @@ class User(db.Model, UserMixin):
     @staticmethod
     def verify_passowrd_reset_token(token):
         try:
-            id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])[
-                "reset_password"
-            ]
+            id = jwt.decode(
+                token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
+            )["reset_password"]
         except:
             return None
         return db.session.get(User, id)

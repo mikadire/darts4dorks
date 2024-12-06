@@ -72,7 +72,6 @@ def redirect_game_over():
         return {"success": False, "message": str(e)}, 500
 
 
-
 @bp.route("/game_over")
 def game_over():
     return render_template("game_over.html")

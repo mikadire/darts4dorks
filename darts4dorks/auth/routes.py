@@ -29,8 +29,7 @@ def login():
         if not next_page or urlsplit(next_page).netloc != "":
             next_page = url_for("main.index")
         return redirect(next_page)
-    return render_template("auth/login.html"
-, title="Sign In", form=form)
+    return render_template("auth/login.html", title="Sign In", form=form)
 
 
 @bp.route("/logout")
@@ -51,8 +50,7 @@ def register():
         db.session.commit()
         flash("Your account has been created.", "success")
         return redirect(url_for("auth.login"))
-    return render_template("auth/register.html"
-, title="Register", form=form)
+    return render_template("auth/register.html", title="Register", form=form)
 
 
 @bp.route("/reset_password_request", methods=["GET", "POST"])
@@ -85,5 +83,4 @@ def reset_password(token):
         db.session.commit()
         flash("Your password has been reset.")
         return redirect(url_for("auth.login"))
-    return render_template("auth/reset_password.html"
-, form=form)
+    return render_template("auth/reset_password.html", form=form)

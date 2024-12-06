@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import (DataRequired, Email, ValidationError, EqualTo)
+from wtforms.validators import DataRequired, Email, ValidationError, EqualTo
 from sqlalchemy import select
 from darts4dorks import db
 from darts4dorks.models import User
