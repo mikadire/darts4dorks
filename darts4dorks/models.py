@@ -80,7 +80,7 @@ class Session(db.Model):
     end_time: Mapped[datetime | None] = mapped_column(
         onupdate=func.now()
     )  # Initially None, updated to server time when ended is set to True
-    ended: Mapped[bool] = mapped_column(default=False)
+    ended: Mapped[bool] = mapped_column(default=False, index=True)
     # "complete" column?
     user_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
 
