@@ -23,11 +23,11 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     mail.init_app(app)
 
-    from darts4dorks.main import bp as main
-    app.register_blueprint(main)
-
     from darts4dorks.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
+
+    from darts4dorks.main import bp as main
+    app.register_blueprint(main)
 
     from darts4dorks.auth import bp as auth_bp
     app.register_blueprint(auth_bp)

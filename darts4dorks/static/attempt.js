@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         submitData();
-    });
+    })
 
     async function submitData() {
         errorMessage.textContent = '';
@@ -21,25 +21,25 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMessage.textContent = 'How did you manage that? Most people need \
             1 or more darts to hit their target.';
             return;
-        };
+        }
 
         const data = {
             session_id: sessionID,
             target: target,
-            darts_thrown: dartsThrown
-        };
+            darts_thrown: dartsThrown,
+        }
 
         try{
-            const response = await fetch('/attempt', {
+            const response = await fetch('/submit_attempt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                body: JSON.stringify(data)
-            });
+                body: JSON.stringify(data),
+            })
 
             if (!response.ok) {
                 throw new Error(`Response status: ${response.status}, 
                     Error: ${respone.message}`);
-            };           
+            }
 
         } catch (error) {
             console.error(error.message);
@@ -54,29 +54,29 @@ document.addEventListener('DOMContentLoaded', () => {
             targetElement.textContent = 'Bull';
         } else {
             targetElement.textContent = target;
-        };
+        }
 
         input.value = '';
         input.focus();
-    };
+    }
 
     async function endGame() {
         try{
             const response = await fetch('/redirect_game_over', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                body: JSON.stringify({session_id: sessionID})
-            });
+                body: JSON.stringify({session_id: sessionID}),
+            })
 
             if (!response.ok) {
                 throw new Error(`Response status: ${response.status}, 
                     Error: ${respone.message}`);
-            };
+            }
             
             const result = await response.json();
             if (result.redirected) {
                 window.location.replace(result.url);
-            };
+            }
 
         } catch (error) {
             console.error(error.message);

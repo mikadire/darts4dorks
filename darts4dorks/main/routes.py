@@ -5,6 +5,11 @@ from darts4dorks.main import bp
 from darts4dorks.models import Session, Attempt
 
 
+@bp.route("/500error")
+def trigger_500():
+    raise Exception("Testing")
+
+
 @bp.route("/")
 @bp.route("/index")
 def index():
@@ -33,7 +38,7 @@ def round_the_clock():
     )
 
 
-@bp.route("/attempt", methods=["POST"])
+@bp.route("/submit_attempt", methods=["POST"])
 @login_required
 def attempt():
     data = request.get_json()
@@ -57,7 +62,7 @@ def redirect_game_over():
     session = db.session.get(Session, data["session_id"])
     session.ended = True
     db.session.commit()
-    
+
     url = url_for("main.game_over")
     return jsonify({"redirected": True, "url": url})
 

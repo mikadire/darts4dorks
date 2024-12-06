@@ -41,21 +41,6 @@ class User(db.Model, UserMixin):
         db.session.commit()
         return session
 
-    def get_active_session(self):
-        query = (
-            select(Session)
-            .where(Session.ended == False, Session.owner == self)
-            .order_by(Session.id.desc())
-        )
-        return db.session.scalar(query)
-
-    def get_latest_target(self, session):
-        query = (
-            select(Attempt.target)
-            .where(Attempt.session == session)
-            .order_by(Attempt.id.desc())
-        )
-        return db.session.scalar(query)
 
     def get_active_session_and_target(self):
         query = (
