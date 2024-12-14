@@ -2,7 +2,7 @@ import jwt
 from datetime import datetime
 from time import time
 from hashlib import md5
-from sqlalchemy import String, ForeignKey, UniqueConstraint, func, select
+from sqlalchemy import String, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, WriteOnlyMapped
 from flask import current_app
 from flask_login import UserMixin
@@ -43,7 +43,7 @@ class User(db.Model, UserMixin):
 
     def get_active_session_and_target(self):
         query = (
-            select(Session, Attempt.target)
+            db.select(Session, Attempt.target)
             .join_from(Session, Attempt, isouter=True)
             .where(Session.ended == False, Session.owner == self)
             .order_by(Session.id.desc(), Attempt.id.desc())
@@ -68,11 +68,6 @@ class User(db.Model, UserMixin):
         return db.session.get(User, id)
 
 
-@login_manager.user_loader
-def load_user(id):
-    return db.session.get(User, int(id))
-
-
 class Session(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     start_time: Mapped[datetime] = mapped_column(server_default=func.now())
@@ -80,7 +75,6 @@ class Session(db.Model):
         onupdate=func.now()
     )  # Initially None, updated to server time when ended is set to True
     ended: Mapped[bool] = mapped_column(default=False, index=True)
-    # "complete" column?
     user_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
 
     owner: Mapped[User] = relationship(back_populates="sessions")
@@ -110,3 +104,8 @@ class Attempt(db.Model):
             f"Attempt(id={self.id}, target={self.target}, "
             f"darts_thrown={self.darts_thrown}, session_id={self.session_id})"
         )
+
+
+@login_manager.user_loader
+def load_user(id):
+    return db.session.get(User, int(id))

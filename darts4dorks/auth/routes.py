@@ -1,6 +1,5 @@
 from flask import render_template, url_for, redirect, flash, request
 from flask_login import current_user, login_user, logout_user
-from sqlalchemy import select
 from urllib.parse import urlsplit
 from darts4dorks import db
 from darts4dorks.auth import bp
@@ -20,7 +19,7 @@ def login():
         return redirect(url_for("main.index"))
     form = LoginForm()
     if form.validate_on_submit():
-        user = db.session.scalar(select(User).where(User.email == form.email.data))
+        user = db.session.scalar(db.select(User).where(User.email == form.email.data))
         if user is None or not user.verify_password(form.password.data):
             flash("Invalid username or password.", "danger")
             return redirect(url_for("auth.login"))
@@ -59,7 +58,7 @@ def reset_password_request():
         return redirect(url_for("main.index"))
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
-        user = db.session.scalar(select(User).where(User.email == form.email.data))
+        user = db.session.scalar(db.select(User).where(User.email == form.email.data))
         if user:
             send_password_reset_email(user)
         flash("Check your email for the instructions to reset your password.")

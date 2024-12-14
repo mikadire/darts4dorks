@@ -7,11 +7,12 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from config import Config
+from darts4dorks.utils import StdDev
 
 db = SQLAlchemy(add_models_to_shell=True)
 migrate = Migrate()
 login_manager = LoginManager()
-login_manager.login_view = "login"
+login_manager.login_view = "auth.login"
 mail = Mail()
 
 
@@ -34,6 +35,13 @@ def create_app(config_class=Config):
 
     from darts4dorks.user import bp as user_bp
     app.register_blueprint(user_bp)
+
+    from darts4dorks.api import bp as api_bp
+    app.register_blueprint(api_bp)
+
+    with app.app_context():
+        if db.engine.name == "sqlite":
+            db.engine.raw_connection().create_aggregate("stddev", 1, StdDev)
 
     if not app.debug:
         if app.config["MAIL_SERVER"]:

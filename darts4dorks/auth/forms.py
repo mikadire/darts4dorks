@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, ValidationError, EqualTo
-from sqlalchemy import select
 from darts4dorks import db
 from darts4dorks.models import User
 
@@ -23,14 +22,14 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField("Register")
 
     def validate_username(self, username):
-        user = db.session.scalar(select(User).where(User.username == username.data))
+        user = db.session.scalar(db.select(User).where(User.username == username.data))
         if user is not None:
             raise ValidationError(
                 "That username is taken. Please choose a different one."
             )
 
     def validate_email(self, email):
-        user = db.session.scalar(select(User).where(User.email == email.data))
+        user = db.session.scalar(db.select(User).where(User.email == email.data))
         if user:
             raise ValidationError("Please us a different email address.")
 
