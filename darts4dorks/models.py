@@ -1,5 +1,6 @@
 import jwt
-from datetime import datetime
+import secrets
+from datetime import datetime, timezone, timedelta
 from time import time
 from hashlib import md5
 from sqlalchemy import String, ForeignKey, UniqueConstraint, func
@@ -16,6 +17,8 @@ class User(db.Model, UserMixin):
     email: Mapped[str] = mapped_column(String(128), index=True, unique=True)
     password_hash: Mapped[str | None] = mapped_column(String(256))
     created: Mapped[datetime] = mapped_column(server_default=func.now())
+    token: Mapped[str | None] = mapped_column(String(32), index=True, unique=True)
+    token_expiration: Mapped[datetime | None]
 
     sessions: WriteOnlyMapped["Session"] = relationship(back_populates="owner")
 
@@ -38,7 +41,6 @@ class User(db.Model, UserMixin):
     def create_session(self):
         session = Session(owner=self)
         db.session.add(session)
-        db.session.commit()
         return session
 
     def get_active_session_and_target(self):
@@ -66,6 +68,29 @@ class User(db.Model, UserMixin):
         except:
             return None
         return db.session.get(User, id)
+
+    def get_api_token(self, expires_in=3600):
+        now = datetime.now(timezone.utc)
+        if self.token and self.token_expiration.replace(
+            tzinfo=timezone.utc
+        ) > now + timedelta(seconds=60):
+            return self.token
+        self.token = secrets.token_hex(16)
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.token
+
+    def revoke_api_token(self):
+        self.token_expiration = datetime.now(timezone.utc) - timedelta(seconds=1)
+
+    @staticmethod
+    def check_api_token(token):
+        user = db.session.scalar(db.select(User).where(User.token == token))
+        if user is None or user.token_expiration.replace(
+            tzinfo=timezone.utc
+        ) < datetime.now(timezone.utc):
+            return None
+        return user
 
 
 class Session(db.Model):

@@ -5,11 +5,6 @@ from darts4dorks.main import bp
 from darts4dorks.models import Session, Attempt
 
 
-@bp.route("/500error")
-def trigger_500():
-    raise Exception("Testing")
-
-
 @bp.route("/")
 @bp.route("/index")
 def index():
@@ -22,6 +17,7 @@ def round_the_clock():
     result = current_user.get_active_session_and_target()
     if result is None:
         session = current_user.create_session()
+        db.session.commit()
         target = 1
     else:
         flash("You had an existing game going.")
@@ -58,6 +54,7 @@ def submit_attempt():
 
 
 @bp.route("/redirect_game_over", methods=["POST"])
+@login_required
 def redirect_game_over():
     data = request.get_json()
     session = db.session.get(Session, data["session_id"])
