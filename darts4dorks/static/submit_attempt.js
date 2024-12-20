@@ -3,14 +3,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('darts-thrown');
     const form = document.getElementById('dart-form');
     const errorMessage = document.getElementById('error-message');
+    const undoButton = document.getElementById('undo-button');
     let target = startTarget;
 
     input.focus();
+
+    undoButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        undoSubmit();
+    })
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         submitData();
     })
+
+    async function undoSubmit() {
+        errorMessage.textContent = '';
+
+        let removeTarget = target - 1;
+        const data = {
+            session_id: sessionID,
+            target: removeTarget,
+        }
+
+        try{
+            const response = await fetch('/undo_attempt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify(data),
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Response status: ${response.status}, 
+                    Error: ${errorData.message}`);
+            }
+
+            target -= 1;
+            targetElement.textContent = target;
+            errorMessage.textContent = `Try deleted. Please re-enter the number of darts
+            thrown at target ${target}.`;
+
+        } catch (error) {
+            console.error(error.message);
+            errorMessage.textContent = `An error has occurred. Please try again.`;
+        }
+    }
 
     async function submitData() {
         errorMessage.textContent = '';
@@ -18,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dartsThrown = parseInt(input.value);
 
         if (isNaN(dartsThrown) || dartsThrown < 1) {
-            errorMessage.textContent = 'How did you manage that? Most people need \
-            1 or more darts to hit their target.';
+            errorMessage.textContent = `How did you manage that? Most people need
+            1 or more darts to hit their target.`;
             return;
         }
 

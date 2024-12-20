@@ -53,6 +53,25 @@ def submit_attempt():
         return {"success": False, "message": str(e)}, 500
 
 
+@bp.route("/undo_attempt", methods=["POST"])
+@login_required
+def undo_attempt():
+    data = request.get_json()
+    attempt = db.session.scalar(
+        db.select(Attempt).where(
+            Attempt.session_id == data["session_id"], Attempt.target == data["target"]
+        )
+    )
+    db.session.delete(attempt)
+
+    try:
+        db.session.commit()
+        return {"success": True, "message": "Attempt successfully saved."}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"success": False, "message": str(e)}, 500
+
+
 @bp.route("/redirect_game_over", methods=["POST"])
 @login_required
 def redirect_game_over():
