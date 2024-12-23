@@ -1,4 +1,5 @@
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
+from flask import current_app
 from darts4dorks import db
 from darts4dorks.models import User
 from darts4dorks.api.errors import error_response
@@ -16,6 +17,9 @@ def verify_password(username, password):
 
 @token_auth.verify_token
 def verify_token(token):
+    if current_app.config['DISABLE_AUTH']:
+        user = db.session.get(User, 1)
+        return user
     return User.check_api_token(token) if token else None
 
 

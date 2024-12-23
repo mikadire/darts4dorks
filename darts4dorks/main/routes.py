@@ -3,6 +3,7 @@ from flask_login import current_user, login_required
 from darts4dorks import db
 from darts4dorks.main import bp
 from darts4dorks.models import Session, Attempt
+from darts4dorks.stats import get_rtc_stats
 
 
 @bp.route("/")
@@ -66,7 +67,7 @@ def undo_attempt():
 
     try:
         db.session.commit()
-        return {"success": True, "message": "Attempt successfully saved."}, 200
+        return {"success": True, "message": "Attempt successfully saved."}
     except Exception as e:
         db.session.rollback()
         return {"success": False, "message": str(e)}, 500
@@ -76,18 +77,32 @@ def undo_attempt():
 @login_required
 def redirect_game_over():
     data = request.get_json()
-    session = db.session.get(Session, data["session_id"])
+    session_id = data["session_id"]
+    session = db.session.get(Session, session_id)
     session.ended = True
 
     try:
         db.session.commit()
-        url = url_for("main.game_over")
-        return {"success": True, "url": url}, 200
+        url = url_for("main.game_over", session_id=session_id)
+        return {"success": True, "url": url}
     except Exception as e:
         db.session.rollback()
         return {"success": False, "message": str(e)}, 500
 
 
-@bp.route("/game_over")
-def game_over():
-    return render_template("game_over.html")
+@bp.route("/game_over/<int:session_id>")
+@login_required
+def game_over(session_id):
+    return render_template(
+        "game_over.html",
+        title="Game Over",
+        user_id=current_user.id,
+        session_id=session_id,
+    )
+
+
+@bp.route("/rtc_stats/<int:user_id>", defaults={"session_id": None})
+@bp.route("/rtc_stats/<int:user_id>/<int:session_id>", methods=["GET"])
+@login_required
+def rtc_stats(user_id, session_id):
+    return get_rtc_stats(user_id, session_id)

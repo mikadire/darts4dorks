@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Game Over</h1>
-  <p><a href="{{ url_for('main.round_the_clock') }}">Play again</a></p>
+<h1>Game Over</h1>
+<p><a href="{{ url_for('main.round_the_clock') }}">Play again</a></p>
+<div id="error-message" style="color: red"></div>
+<div id="session-stats"></div>
+<div id="lifetime-stats"></div>
+<div id="chart" style="width: 100%; height: 700px;"></div>
+<script>const userId = {{ user_id| tojson }};</script>
+<script>const sessionId = {{ session_id| tojson }};</script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="{{ url_for('static', filename='rtc_game_over.js') }}"></script>
 {% endblock %}

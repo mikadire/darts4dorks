@@ -2,6 +2,8 @@ import os
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask import Flask
+import sqlalchemy as sa
+import sqlalchemy.orm as so
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -25,20 +27,31 @@ def create_app(config_class=Config):
     mail.init_app(app)
 
     from darts4dorks.errors import bp as errors_bp
+
     app.register_blueprint(errors_bp)
 
     from darts4dorks.main import bp as main
+
     app.register_blueprint(main)
 
     from darts4dorks.auth import bp as auth_bp
+
     app.register_blueprint(auth_bp)
 
     from darts4dorks.user import bp as user_bp
+
     app.register_blueprint(user_bp)
 
     from darts4dorks.api import bp as api_bp
+
     app.register_blueprint(api_bp)
 
+    # Defines commands in 'flask shell' REPL
+    @app.shell_context_processor
+    def make_shell_context():
+        return {"sa": sa, "so": so}
+
+    # Adds StdDev function to SQLite
     with app.app_context():
         if db.engine.name == "sqlite":
             db.engine.raw_connection().create_aggregate("stddev", 1, StdDev)
