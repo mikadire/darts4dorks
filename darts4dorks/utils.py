@@ -9,4 +9,5 @@ class StdDev:
         self.values.append(value)
 
     def finalize(self):
-        return float(np.std(self.values, ddof=1))
+        stddev = float(np.std(self.values, ddof=1))
+        return stddev if not np.isnan(stddev) else 0

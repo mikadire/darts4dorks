@@ -1,5 +1,6 @@
 import jwt
 import secrets
+from typing import List
 from datetime import datetime, timezone, timedelta
 from time import time
 from hashlib import md5
@@ -103,7 +104,10 @@ class Session(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
 
     owner: Mapped[User] = relationship(back_populates="sessions")
-    attempts: WriteOnlyMapped["Attempt"] = relationship(back_populates="session")
+    attempts: Mapped[List["Attempt"]] = relationship(
+        back_populates="session",
+        cascade="all, delete, delete-orphan",
+    )
 
     def __repr__(self):
         return (
@@ -116,7 +120,9 @@ class Attempt(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     target: Mapped[int]
     darts_thrown: Mapped[int]
-    session_id: Mapped[int] = mapped_column(ForeignKey(Session.id), index=True)
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey(Session.id, ondelete="CASCADE"), index=True
+    )
 
     session: Mapped[Session] = relationship(back_populates="attempts")
 

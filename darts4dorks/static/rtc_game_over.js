@@ -3,11 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const lifetimeStatsDiv = document.getElementById("lifetime-stats");
   const sessionStatsDiv = document.getElementById("session-stats");
 
-  fetchStats(userId, sessionId);
+  fetchStats(userId);
 
-  async function fetchStats(userId, sessionId) {
+  async function fetchStats(userId) {
     try {
-      const response = await fetch(`/rtc_stats/${userId}/${sessionId}`);
+      const response = await fetch(`/rtc_stats/${userId}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const data = await response.json();
+      console.log(data);
       displayStats(data);
       createChart(data);
     } catch (error) {
@@ -48,19 +49,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createChart(data) {
-    const targets = data.sessionX_darts_per_target.map((point) => point.target);
-    const sessionDarts = data.sessionX_darts_per_target.map(
-      (point) => point.darts_thrown
+    const targets = data.lifetime_target_stats.map((point) => point.target);
+    const modifiedTargets = targets.map((target) =>
+      target === 21 ? "Bull" : target
     );
+
+    const sessionDarts = data.temporal_target_stats
+      .filter((stat) => stat.session_id == sessionId)
+      .map((stat) => stat.darts_thrown);
     const lifetimeAvgs = data.lifetime_target_stats.map(
       (stat) => stat.avg_darts_thrown
     );
     const lifetimeStdDevs = data.lifetime_target_stats.map((stat) =>
       stat.stddev_darts_thrown.toFixed(2)
-    );
-
-    const modifiedTargets = targets.map((target) =>
-      target === 21 ? "Bull" : target
     );
 
     const sessionTrace = {
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
       marker: { color: "rgba(0, 255, 0, 0.6)" },
       error_y: {
         type: "data",
+        name: "Standard deviation",
         symmetric: false,
         array: lifetimeStdDevs,
         arrayminus: lifetimeAvgs.map((avg, index) =>
@@ -90,6 +92,8 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     };
 
+    const traces = [sessionTrace, lifetimeTrace];
+
     const layout = {
       xaxis: { title: "Targets", tickvals: modifiedTargets, type: "category" },
       yaxis: { title: "Darts Thrown", zeroline: true },
@@ -99,8 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const config = { responsive: true };
 
-    const dataPlotly = [sessionTrace, lifetimeTrace];
-
-    Plotly.newPlot("chart", dataPlotly, layout, config);
+    Plotly.newPlot("chart", traces, layout, config);
   }
 });

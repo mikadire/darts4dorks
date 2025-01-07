@@ -5,8 +5,7 @@ from darts4dorks.stats import get_rtc_stats
 from darts4dorks.api.auth import token_auth
 
 
-@bp.route("/rtc_stats/<int:user_id>", defaults={"session_id": None})
-@bp.route("/rtc_stats/<int:user_id>/<int:session_id>", methods=["GET"])
+@bp.route("/rtc_stats/<int:user_id>", methods=["GET"])
 @token_auth.login_required
-def rtc_stats(user_id, session_id):
-    return get_rtc_stats(user_id, session_id)
+def rtc_stats(user_id):
+    return get_rtc_stats(user_id)
