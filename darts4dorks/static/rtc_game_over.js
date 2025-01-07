@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const data = await response.json();
-      console.log(data);
       displayStats(data);
       createChart(data);
     } catch (error) {

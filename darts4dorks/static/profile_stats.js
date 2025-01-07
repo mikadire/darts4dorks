@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const data = await response.json();
+      console.log(data);
       createChart(data);
     } catch (error) {
       console.error(error.message);
@@ -36,12 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createChart(data) {
-    const sessionDate = data.temporal_session_stats.map((point) => point.date);
+    const sessionDate = data.temporal_session_stats.map((point) => {
+      const date = new Date(point.date);
+      return date.toLocaleString();
+    });
+
     const sessionAvg = data.temporal_session_stats.map(
       (point) => point.avg_darts_thrown
     );
     const rollingSessionAvg = cumulativeAverage(sessionAvg);
-    console.log(rollingSessionAvg);
 
     const targetsDict = data.temporal_target_stats.reduce((acc, row) => {
       if (!acc[row.target]) {
@@ -51,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       acc[row.target].darts_thrown.push(row.darts_thrown);
       return acc;
     }, {});
+    console.log(targetsDict);
 
     const sessionTrace = {
       x: sessionDate,
@@ -66,9 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const targetTraces = Object.entries(targetsDict).map(
       ([target, values]) => ({
-        x: values.date,
+        x: values.date.map((point) => new Date(point).toLocaleString()),
         y: values.darts_thrown,
-        name: `Target: ${target}`,
+        name: target === "21" ? "Bull" : `Target: ${target}`,
         type: "scatter",
       })
     );
