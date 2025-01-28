@@ -21,7 +21,7 @@ def round_the_clock():
         db.session.commit()
         target = 1
     else:
-        flash("You had an existing game going.")
+        flash("You had an existing game going.", "info")
         session, target = result
         if target is None:
             target = 1

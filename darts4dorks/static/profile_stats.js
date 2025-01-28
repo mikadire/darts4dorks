@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const data = await response.json();
-      console.log(data);
       createChart(data);
     } catch (error) {
       console.error(error.message);
@@ -55,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
       acc[row.target].darts_thrown.push(row.darts_thrown);
       return acc;
     }, {});
-    console.log(targetsDict);
 
     const sessionTrace = {
       x: sessionDate,
