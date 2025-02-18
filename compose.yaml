@@ -1,0 +1,28 @@
+version: "3.8"
+
+networks:
+  darts4dorks-network:
+    driver: bridge
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - darts4dorks-network
+
+  darts4dorks:
+    image: darts4dorks:latest
+    container_name: darts4dorks
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - darts4dorks-network
