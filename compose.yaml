@@ -17,7 +17,7 @@ services:
     container_name: darts4dorks
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - 127.0.0.1:5000:5000
     env_file:
       - .env
     depends_on:

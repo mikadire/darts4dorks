@@ -7,4 +7,4 @@ while true; do
 	echo Upgrade command failed, retrying in 5 secs...
 	sleep 5
 done
-exec gunicorn -b :5000 --access-logfile - --error-logfile - app:app
+exec gunicorn -b 127.0.0.1:5000 --access-logfile - --error-logfile - app:app
