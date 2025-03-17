@@ -27,5 +27,5 @@ services:
     networks:
       - darts4dorks-network
 
-  volumes:
-    darts4dorks-data:
+volumes:
+  darts4dorks-data:
