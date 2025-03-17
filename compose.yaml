@@ -11,6 +11,8 @@ services:
       - .env
     networks:
       - darts4dorks-network
+    volumes:
+      - darts4dorks-data:/var/lib/mysql
 
   darts4dorks:
     image: darts4dorks:latest
@@ -24,3 +26,6 @@ services:
       - mysql
     networks:
       - darts4dorks-network
+
+  Volumes:
+    darts4dorks-data:
