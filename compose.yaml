@@ -1,5 +1,5 @@
 networks:
-  darts4dorks-network:
+  network:
     driver: bridge
 
 services:
@@ -10,12 +10,14 @@ services:
     env_file:
       - .env
     networks:
-      - darts4dorks-network
+      - network
     volumes:
-      - darts4dorks-data:/var/lib/mysql
+      - data:/var/lib/mysql
 
   darts4dorks:
     image: darts4dorks:latest
+    build: .
+    pull_policy: build
     container_name: darts4dorks
     restart: unless-stopped
     ports:
@@ -25,7 +27,7 @@ services:
     depends_on:
       - mysql
     networks:
-      - darts4dorks-network
+      - network
 
 volumes:
-  darts4dorks-data:
+  data:
