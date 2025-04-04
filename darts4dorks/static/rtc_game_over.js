@@ -94,8 +94,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const traces = [sessionTrace, lifetimeTrace];
 
     const layout = {
-      xaxis: { title: "Targets", tickvals: modifiedTargets, type: "category" },
-      yaxis: { title: "Darts Thrown", zeroline: true },
+      xaxis: {
+        title: { text: "Targets" },
+        tickvals: modifiedTargets,
+        type: "category",
+      },
+      yaxis: { title: { text: "Darts Thrown" }, zeroline: true },
       barmode: "group",
       bargap: 0.2,
     };

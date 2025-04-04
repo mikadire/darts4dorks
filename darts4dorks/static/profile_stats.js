@@ -81,8 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const config = { responsive: true };
 
     const layout = {
-      xaxis: { title: "Session" },
-      yaxis: { title: "Darts Thrown", zeroline: true },
+      xaxis: { title: { text: "Session" } },
+      yaxis: { title: { text: "Darts Thrown" }, zeroline: true },
       showlegend: true,
     };
 

@@ -9,3 +9,4 @@ __pycache__/
 
 logs/
 certs/
+database_ERD.pdf

@@ -4,16 +4,6 @@ from darts4dorks.models import Session, Attempt
 
 
 def get_rtc_stats(user_id):
-    lifetime_stats = db.session.execute(
-        db.select(func.avg(Attempt.darts_thrown), func.stddev(Attempt.darts_thrown))
-        .join(Session)
-        .where(Session.user_id == user_id)
-    ).first()
-    lifetime_stats = {
-        "avg_darts_thrown": lifetime_stats[0],
-        "stddev_darts_thrown": lifetime_stats[1],
-    }
-
     temporal_session_stats = db.session.execute(
         db.select(
             Attempt.session_id,
@@ -26,11 +16,12 @@ def get_rtc_stats(user_id):
         .where(Session.user_id == user_id, Session.ended == True)
         .group_by(Attempt.session_id)
     ).all()
-    temporal_session_stats = [
+
+    temporal_session_stats_json = [
         {
             "session_id": row[0],
             "date": row[1],
-            "avg_darts_thrown": row[2],
+            "avg_darts_thrown": float(row[2]),
             "total_darts_thrown": row[3],
             "stddev_darts_thrown": row[4],
         }
@@ -38,19 +29,27 @@ def get_rtc_stats(user_id):
     ]
 
     temporal_target_stats = db.session.execute(
-        (
-            db.select(
-                Session.id, Session.end_time, Attempt.target, Attempt.darts_thrown
-            )
-            .join(Session)
-            .where(Session.user_id == user_id, Session.ended == True)
-            .order_by(Session.id.desc(), Attempt.target)
-        )
+        db.select(Session.id, Session.end_time, Attempt.target, Attempt.darts_thrown)
+        .join(Session)
+        .where(Session.user_id == user_id, Session.ended == True)
+        .order_by(Session.id.desc(), Attempt.target)
     ).all()
-    temporal_target_stats = [
+
+    temporal_target_stats_json = [
         {"session_id": row[0], "date": row[1], "target": row[2], "darts_thrown": row[3]}
         for row in temporal_target_stats
     ]
+
+    lifetime_stats = db.session.execute(
+        db.select(func.avg(Attempt.darts_thrown), func.stddev(Attempt.darts_thrown))
+        .join(Session)
+        .where(Session.user_id == user_id)
+    ).first()
+
+    lifetime_stats_json = {
+        "avg_darts_thrown": float(lifetime_stats[0]),
+        "stddev_darts_thrown": lifetime_stats[1],
+    }
 
     lifetime_target_stats = db.session.execute(
         db.select(
@@ -62,14 +61,19 @@ def get_rtc_stats(user_id):
         .where(Session.user_id == user_id)
         .group_by(Attempt.target)
     ).all()
-    lifetime_target_stats = [
-        {"target": row[0], "avg_darts_thrown": row[1], "stddev_darts_thrown": row[2]}
+
+    lifetime_target_stats_json = [
+        {
+            "target": row[0],
+            "avg_darts_thrown": float(row[1]),
+            "stddev_darts_thrown": row[2],
+        }
         for row in lifetime_target_stats
     ]
 
     return {
-        "lifetime_stats": lifetime_stats,
-        "lifetime_target_stats": lifetime_target_stats,
-        "temporal_target_stats": temporal_target_stats,
-        "temporal_session_stats": temporal_session_stats,
+        "lifetime_stats": lifetime_stats_json,
+        "lifetime_target_stats": lifetime_target_stats_json,
+        "temporal_target_stats": temporal_target_stats_json,
+        "temporal_session_stats": temporal_session_stats_json,
     }
