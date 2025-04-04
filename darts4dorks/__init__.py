@@ -1,7 +1,7 @@
 import os
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
-from flask import Flask
+from flask import Flask, url_for
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from flask_sqlalchemy import SQLAlchemy
@@ -50,6 +50,20 @@ def create_app(config_class=Config):
     @app.shell_context_processor
     def make_shell_context():
         return {"sa": sa, "so": so}
+
+    # Automated cache-busting
+    @app.context_processor
+    def override_url_for():
+        def hashed_url_for(endpoint, **values):
+            if endpoint == "static":
+                filename = values.get("filename", "")
+                if filename:
+                    filepath = os.path.join(app.static_folder, filename)
+                    if os.path.exists(filepath):
+                        values["v"] = int(os.path.getmtime(filepath))
+            return url_for(endpoint, **values)
+
+        return dict(url_for=hashed_url_for)
 
     # Adds StdDev function to SQLite
     with app.app_context():
