@@ -1,17 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<table>
-  <tr valign="top">
-    <td><img src="{{ current_user.avatar(128) }}"></td>
-    <td>
-      <h1>User: {{ current_user.username }}</h1>
-    </td>
-    <p><a href="{{ url_for('user.update_account') }}">Update your account</a></p>
-  </tr>
-</table>
-<div id="chart" style="width: 100%; height: 700px;"></div>
-<script>const userId = {{ current_user.id| tojson }};</script>
+<div class="container-fluid" style="min-height: 80vh; padding-top: 20px; padding-bottom: 20px;">
+  <div class="row align-items-center" style="margin-bottom: 20px;">
+    <div class="col-md-1 text-center">
+      <img src="{{ current_user.avatar(128) }}" alt="User Avatar" class="img-fluid rounded-circle">
+    </div>
+    <div class="col-md-9">
+      <div class="card bg-light bg-opacity-75 shadow-lg rounded-4 text-center" style="max-width: 200px;">
+        <h1>{{ current_user.username }}</h1>
+        <p><a href="{{ url_for('user.update_account') }}">Update your account</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="chart" style="width: 100%; height: 700px;"></div>
+</div>
+
+<script>const userId = {{ current_user.id | tojson }};</script>
 <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='profile_stats.js') }}"></script>
 {% endblock %}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card bg-light bg-opacity-75 shadow-lg p-5 rounded-4 text-center" style="max-width: 500px;">
+    <h1>{{ current_user.username }}</h1>
+    <p><a href="{{ url_for('user.update_account') }}">Update your account</a></p>
+  </div>
+</div>

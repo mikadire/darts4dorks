@@ -15,6 +15,7 @@ db = SQLAlchemy(add_models_to_shell=True)
 migrate = Migrate()
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
+login_manager.login_message_category = "info"
 mail = Mail()
 
 

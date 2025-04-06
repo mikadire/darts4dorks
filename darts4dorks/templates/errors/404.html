@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>File Not Found</h1>
-    <p><a href="{{ url_for('main.index') }}">Back</a></p>
+  <div class="container text-center" style="max-width: 600px; margin-top: 50px;">
+    <div class="alert alert-danger" role="alert">
+      <h1 class="display-4">404 - File Not Found</h1>
+      <p>The page you are looking for might have been moved or deleted.</p>
+      <p>
+        <a href="{{ url_for("main.index") }}" class="btn btn-primary">Back to Home</a>
+      </p>
+    </div>
+  </div>
 {% endblock %}

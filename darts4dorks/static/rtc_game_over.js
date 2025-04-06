@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
       y: sessionDarts,
       name: "This Game",
       type: "bar",
-      marker: { color: "rgba(0, 0, 255, 0.6)" },
+      marker: { color: "rgb(13, 110, 253)" },
     };
 
     const lifetimeTrace = {
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       y: lifetimeAvgs,
       name: "Lifetime Avg",
       type: "bar",
-      marker: { color: "rgba(0, 255, 0, 0.6)" },
+      marker: { color: "rgb(204,0,204)" },
       error_y: {
         type: "data",
         name: "Standard deviation",

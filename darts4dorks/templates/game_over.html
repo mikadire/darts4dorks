@@ -1,14 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Game Over</h1>
-<p><a href="{{ url_for('main.round_the_clock') }}">Play again</a></p>
-<div id="error-message" style="color: red"></div>
-<div id="session-stats"></div>
-<div id="lifetime-stats"></div>
-<div id="chart" style="width: 100%; height: 700px;"></div>
-<script>const userId = {{ user_id| tojson }};</script>
-<script>const sessionId = {{ session_id| tojson }};</script>
+<div class="container">
+  <div class="text-center mb-4">
+    <h1 class="display-6 text-white">Game Over</h1>
+    <a href="{{ url_for('main.round_the_clock') }}" class="btn btn-primary mt-3">Play Again</a>
+  </div>
+
+  <div id="error-message" class="text-danger text-center mb-3" style="display: none;"></div>
+
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">This Session</div>
+        <div class="card-body" id="session-stats">
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-header custom-bg text-white">Lifetime Stats</div>
+        <div class="card-body" id="lifetime-stats">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div id="chart" style="width: 100%; height: 700px;"></div>
+</div>
+
+<script>const userId = {{ user_id | tojson }};</script>
+<script>const sessionId = {{ session_id | tojson }};</script>
 <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='rtc_game_over.js') }}"></script>
 {% endblock %}

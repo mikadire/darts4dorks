@@ -1,10 +1,29 @@
 {% extends "base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
 
 {% block content %}
   {% if current_user.is_anonymous %}
-    <h1>Welcome! Log in or register an account to play.</h1>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+      <div class="card bg-light bg-opacity-80 shadow-lg p-4 rounded-4" style="width: 100%; max-width: 500px;">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">Welcome! Create an account to play.</h2>
+          {{ wtf.quick_form(form) }}
+          <p class="text-center mt-3">
+            Already have an account?
+            <a href="{{ url_for("auth.login") }}">Sign In</a>
+          </p>
+        </div>
+      </div>
+    </div>
   {% else %}
-    <h1>Welcome {{ current_user.username }}!</h1>
-    <p><a href="{{ url_for('main.round_the_clock') }}">Click here to play Round the Clock!</a></p>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+      <div class="card bg-light bg-opacity-75 shadow-lg p-5 rounded-4 text-center" style="max-width: 500px;">
+        <h1 class="mb-4">Welcome, {{ current_user.username }}!</h1>
+        <div class="d-grid gap-3">
+          <a class="btn btn-primary btn-lg" href="{{ url_for("main.round_the_clock") }}">Play Round the Clock</a>
+          <a class="btn btn-outline-primary btn-lg" href="{{ url_for("user.account") }}">View Stats</a>
+        </div>
+      </div>
+    </div>
   {% endif %}
-{% endblock %}
+{% endblock content %}

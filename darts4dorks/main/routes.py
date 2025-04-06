@@ -1,15 +1,24 @@
-from flask import render_template, flash, request, url_for
+from flask import render_template, flash, request, url_for, redirect
 from flask_login import current_user, login_required
 from darts4dorks import db
 from darts4dorks.main import bp
-from darts4dorks.models import Session, Attempt
+from darts4dorks.models import User, Session, Attempt
 from darts4dorks.stats import get_rtc_stats
+from darts4dorks.auth.forms import RegistrationForm
 
 
-@bp.route("/")
-@bp.route("/index")
+@bp.route("/", methods=["GET", "POST"])
+@bp.route("/index", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("Your account has been created.", "success")
+        return redirect(url_for("auth.login"))
+    return render_template("index.html", form=form)
 
 
 @bp.route("/round_the_clock")
