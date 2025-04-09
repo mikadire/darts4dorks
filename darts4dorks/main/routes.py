@@ -48,19 +48,27 @@ def round_the_clock():
 @login_required
 def submit_attempt():
     data = request.get_json()
-    attempt = Attempt(
-        target=data["target"],
-        darts_thrown=data["darts_thrown"],
-        session_id=data["session_id"],
-    )
-    db.session.add(attempt)
+    target = data["target"]
+    darts_thrown = data["darts_thrown"]
+    session_id = data["session_id"]
 
-    try:
-        db.session.commit()
-        return {"success": True, "message": "Attempt successfully saved."}, 201
-    except Exception as e:
-        db.session.rollback()
-        return {"success": False, "message": str(e)}, 500
+    if darts_thrown >= 1:
+        attempt = Attempt(
+            target=target,
+            darts_thrown=darts_thrown,
+            session_id=session_id,
+        )
+        db.session.add(attempt)
+
+        try:
+            db.session.commit()
+            return {"success": True, "message": "Attempt successfully saved."}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {"success": False, "message": str(e)}, 500
+
+    if darts_thrown < 1 or target < 1:
+        return {"success": False, "message": "Invalid user input"}, 400
 
 
 @bp.route("/undo_attempt", methods=["POST"])
@@ -110,7 +118,7 @@ def game_over(session_id):
     )
 
 
-@bp.route("/rtc_stats/<int:user_id>", methods=["GET"])
+@bp.route("/rtc_stats/<int:user_id>")
 @login_required
 def rtc_stats(user_id):
     return get_rtc_stats(user_id)

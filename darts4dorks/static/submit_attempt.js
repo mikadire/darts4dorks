@@ -6,9 +6,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const undoButton = document.getElementById("undo-button");
   let target = startTarget;
 
-  if (target === 21) {
-    targetElement.textContent = "Bull";
+  function updateTargetElement() {
+    if (target === 22) {
+      endGame();
+    } else if (target === 21) {
+      targetElement.textContent = "Bull";
+    } else {
+      targetElement.textContent = target;
+    }
+    undoButton.disabled = target <= 1;
   }
+
+  updateTargetElement();
 
   input.focus();
 
@@ -53,14 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       target += 1;
-
-      if (target === 22) {
-        endGame();
-      } else if (target === 21) {
-        targetElement.textContent = "Bull";
-      } else {
-        targetElement.textContent = target;
-      }
+      updateTargetElement();
 
       input.value = "";
       input.focus();
@@ -117,7 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       target -= 1;
-      targetElement.textContent = target;
+      updateTargetElement();
+
       errorMessage.textContent = `Try deleted. Please re-enter the number of darts
             thrown at target ${target}.`;
     } catch (error) {
