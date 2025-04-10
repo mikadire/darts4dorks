@@ -6,17 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const undoButton = document.getElementById("undo-button");
   let target = startTarget;
 
-  function updateTargetElement() {
-    if (target === 22) {
-      endGame();
-    } else if (target === 21) {
-      targetElement.textContent = "Bull";
-    } else {
-      targetElement.textContent = target;
-    }
-    undoButton.disabled = target <= 1;
-  }
-
   updateTargetElement();
 
   input.focus();
@@ -30,6 +19,41 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     undoSubmit();
   });
+
+  function updateTargetElement() {
+    if (target === 22) {
+      endGame();
+    } else if (target === 21) {
+      targetElement.textContent = "Bull";
+    } else {
+      targetElement.textContent = target;
+    }
+    undoButton.disabled = target <= 1;
+  }
+
+  async function endGame() {
+    try {
+      const response = await fetch("/redirect_game_over", {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ session_id: sessionID }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Response status: ${response.status}, 
+                    Error: ${errorData.message}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        window.location.replace(result.url);
+      }
+    } catch (error) {
+      console.error(error.message);
+      errorMessage.textContent = `An error has occurred. Please try again.`;
+    }
+  }
 
   async function submitData() {
     errorMessage.textContent = "";
@@ -66,30 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       input.value = "";
       input.focus();
-    } catch (error) {
-      console.error(error.message);
-      errorMessage.textContent = `An error has occurred. Please try again.`;
-    }
-  }
-
-  async function endGame() {
-    try {
-      const response = await fetch("/redirect_game_over", {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify({ session_id: sessionID }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Response status: ${response.status}, 
-                    Error: ${errorData.message}`);
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        window.location.replace(result.url);
-      }
     } catch (error) {
       console.error(error.message);
       errorMessage.textContent = `An error has occurred. Please try again.`;

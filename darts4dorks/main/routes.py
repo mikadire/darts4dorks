@@ -1,4 +1,4 @@
-from flask import render_template, flash, request, url_for, redirect
+from flask import render_template, flash, request, url_for, redirect, abort
 from flask_login import current_user, login_required
 from darts4dorks import db
 from darts4dorks.main import bp
@@ -24,6 +24,7 @@ def index():
 @bp.route("/round_the_clock")
 @login_required
 def round_the_clock():
+    user_id = current_user.id
     result = current_user.get_active_session_and_target()
     if result is None:
         session = current_user.create_session()
@@ -39,6 +40,7 @@ def round_the_clock():
     return render_template(
         "round_the_clock.html",
         title="Round the Clock",
+        user_id=user_id,
         session_id=session.id,
         target=target,
     )
@@ -48,43 +50,70 @@ def round_the_clock():
 @login_required
 def submit_attempt():
     data = request.get_json()
+    session_id = data["session_id"]
     target = data["target"]
     darts_thrown = data["darts_thrown"]
-    session_id = data["session_id"]
 
-    if darts_thrown >= 1:
-        attempt = Attempt(
-            target=target,
-            darts_thrown=darts_thrown,
-            session_id=session_id,
-        )
-        db.session.add(attempt)
+    try:
+        session_id = int(data["session_id"])
+        target = int(data["target"])
+        darts_thrown = int(data["darts_thrown"])
+    except (ValueError, TypeError):
+        return {"success": False, "message": "Invalid data types."}, 400
 
-        try:
-            db.session.commit()
-            return {"success": True, "message": "Attempt successfully saved."}, 201
-        except Exception as e:
-            db.session.rollback()
-            return {"success": False, "message": str(e)}, 500
+    session = db.session.get(Session, session_id)
+    if not session or current_user.id != session.user_id:
+        return {"success": False, "message": "Unauthorized session access"}, 403
 
     if darts_thrown < 1 or target < 1:
-        return {"success": False, "message": "Invalid user input"}, 400
+        return {"success": False, "message": "Invalid values"}, 400
+
+    attempt = Attempt(
+        target=target,
+        darts_thrown=darts_thrown,
+        session_id=session_id,
+    )
+    db.session.add(attempt)
+
+    try:
+        db.session.commit()
+        return {"success": True, "message": "Attempt successfully saved."}, 201
+    except Exception as e:
+        db.session.rollback()
+        return {"success": False, "message": str(e)}, 500
 
 
 @bp.route("/undo_attempt", methods=["POST"])
 @login_required
 def undo_attempt():
     data = request.get_json()
+    session_id = data["session_id"]
+    target = data["target"]
+
+    try:
+        session_id = int(data["session_id"])
+        target = int(data["target"])
+    except (ValueError, TypeError):
+        return {"success": False, "message": "Invalid data types."}, 400
+
+    session = db.session.get(Session, session_id)
+    if not session or current_user.id != session.user_id:
+        return {"success": False, "message": "Unauthorized session access"}, 403
+
     attempt = db.session.scalar(
         db.select(Attempt).where(
-            Attempt.session_id == data["session_id"], Attempt.target == data["target"]
+            Attempt.session_id == session_id, Attempt.target == target
         )
     )
+
+    if not attempt:
+        return {"success": False, "message": "Attempt not found."}, 404
+
     db.session.delete(attempt)
 
     try:
         db.session.commit()
-        return {"success": True, "message": "Attempt successfully saved."}
+        return {"success": True, "message": "Attempt successfully deleted."}, 200
     except Exception as e:
         db.session.rollback()
         return {"success": False, "message": str(e)}, 500
@@ -95,13 +124,22 @@ def undo_attempt():
 def redirect_game_over():
     data = request.get_json()
     session_id = data["session_id"]
+
+    try:
+        session_id = int(data["session_id"])
+    except (KeyError, ValueError, TypeError):
+        return {"success": False, "message": "Invalid or missing session ID"}, 400
+
     session = db.session.get(Session, session_id)
+    if not session or current_user.id != session.user_id:
+        return {"success": False, "message": "Unauthorized session access"}, 403
+
     session.ended = True
 
     try:
         db.session.commit()
         url = url_for("main.game_over", session_id=session_id)
-        return {"success": True, "url": url}
+        return {"success": True, "url": url}, 200
     except Exception as e:
         db.session.rollback()
         return {"success": False, "message": str(e)}, 500
@@ -110,6 +148,14 @@ def redirect_game_over():
 @bp.route("/game_over/<int:session_id>")
 @login_required
 def game_over(session_id):
+    session = db.session.get(Session, session_id)
+
+    if current_user.id != session.user_id:
+        abort(403)
+
+    if not session or not session.ended:
+        abort(404)
+
     return render_template(
         "game_over.html",
         title="Game Over",
@@ -118,7 +164,8 @@ def game_over(session_id):
     )
 
 
-@bp.route("/rtc_stats/<int:user_id>")
+@bp.route("/rtc_stats")
 @login_required
-def rtc_stats(user_id):
+def rtc_stats():
+    user_id = current_user.id
     return get_rtc_stats(user_id)

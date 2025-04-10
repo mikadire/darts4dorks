@@ -4,7 +4,7 @@
 
 ## Features
 
-- User authentication and session management
+- User authentication, authorisation and session management
 - Game tracking with player score history and interactive charts
 - Database integration using SQLAlchemy
 - Responsive UI with Bootstrap 5

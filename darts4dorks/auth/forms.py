@@ -31,7 +31,7 @@ class RegistrationForm(FlaskForm):
     def validate_email(self, email):
         user = db.session.scalar(db.select(User).where(User.email == email.data))
         if user:
-            raise ValidationError("Please us a different email address.")
+            raise ValidationError("Please use a different email address.")
 
 
 class ResetPasswordRequestForm(FlaskForm):

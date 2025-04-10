@@ -3,11 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const lifetimeStatsDiv = document.getElementById("lifetime-stats");
   const sessionStatsDiv = document.getElementById("session-stats");
 
-  fetchStats(userId);
+  fetchStats();
 
-  async function fetchStats(userId) {
+  async function fetchStats() {
     try {
-      const response = await fetch(`/rtc_stats/${userId}`);
+      const response = await fetch(`/rtc_stats`);
 
       if (!response.ok) {
         const errorData = await response.json();

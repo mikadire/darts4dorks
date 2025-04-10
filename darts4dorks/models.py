@@ -61,7 +61,7 @@ class User(db.Model, UserMixin):
         )
 
     @staticmethod
-    def verify_passowrd_reset_token(token):
+    def verify_password_reset_token(token):
         try:
             id = jwt.decode(
                 token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
