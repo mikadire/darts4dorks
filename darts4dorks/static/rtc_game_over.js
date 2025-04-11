@@ -3,27 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const lifetimeStatsDiv = document.getElementById("lifetime-stats");
   const sessionStatsDiv = document.getElementById("session-stats");
 
-  fetchStats();
-
-  async function fetchStats() {
-    try {
-      const response = await fetch(`/rtc_stats`);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `Response status: ${response.status}, Error: ${errorData.message}`
-        );
-      }
-
-      const data = await response.json();
-      displayStats(data);
-      createChart(data);
-    } catch (error) {
-      console.error(error.message);
-      errorMessage.textContent = `Failed to load statistics. Please try again.`;
-    }
-  }
+  displayStats(data);
+  createChart(data);
 
   function displayStats(data) {
     const lifetimeHtml = `

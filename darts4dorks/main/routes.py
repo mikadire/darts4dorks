@@ -161,16 +161,11 @@ def game_over(session_id):
     if not session or not session.ended:
         abort(404)
 
+    stats = get_rtc_stats(current_user.id)
+
     return render_template(
         "game_over.html",
         title="Game Over",
-        user_id=current_user.id,
+        data=stats,
         session_id=session_id,
     )
-
-
-@bp.route("/rtc_stats")
-@login_required
-def rtc_stats():
-    user_id = current_user.id
-    return get_rtc_stats(user_id)

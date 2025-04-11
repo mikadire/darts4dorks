@@ -1,26 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("error-message");
 
-  fetchStats();
-
-  async function fetchStats() {
-    try {
-      const response = await fetch(`/rtc_stats`);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `Response status: ${response.status}, Error: ${errorData.message}`
-        );
-      }
-
-      const data = await response.json();
-      createChart(data);
-    } catch (error) {
-      console.error(error.message);
-      errorMessage.textContent = `Failed to load statistics. Please try again.`;
-    }
-  }
+  createChart(data);
 
   function cumulativeAverage(data) {
     const result = [];

@@ -3,12 +3,14 @@ from flask_login import current_user, login_required
 from darts4dorks import db
 from darts4dorks.user import bp
 from darts4dorks.user.forms import UpdateAccountForm
+from darts4dorks.stats import get_rtc_stats
 
 
 @bp.route("/account")
 @login_required
 def account():
-    return render_template("user/account.html", title="Account")
+    stats = get_rtc_stats(current_user.id)
+    return render_template("user/account.html", title="Account", data=stats)
 
 
 @bp.route("/update_account", methods=["GET", "POST"])
