@@ -5,19 +5,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("error-message");
   const undoButton = document.getElementById("undo-button");
   let target = startTarget;
+  let throwsData = {};
 
   updateTargetElement();
-
   input.focus();
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    submitData();
+    addAttempt();
   });
 
   undoButton.addEventListener("click", (event) => {
     event.preventDefault();
-    undoSubmit();
+    undoAttempt();
   });
 
   function updateTargetElement() {
@@ -33,13 +33,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function endGame() {
     try {
-      const response = await fetch("/redirect_game_over", {
+      const data = { session_id: sessionID, throws_data: throwsData };
+
+      const response = await fetch("/submit_game", {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify({ session_id: sessionID }),
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
+      if (!response.success) {
         const errorData = await response.json();
         throw new Error(`Response status: ${response.status}, 
                     Error: ${errorData.message}`);
@@ -55,77 +57,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function submitData() {
-    errorMessage.textContent = "";
-
-    const dartsThrown = parseInt(input.value);
-
-    if (isNaN(dartsThrown) || dartsThrown < 1) {
-      errorMessage.textContent = `How did you manage that? Most people need
-            1 or more darts to hit their target.`;
-      return;
-    }
-
-    const data = {
-      session_id: sessionID,
-      target: target,
-      darts_thrown: dartsThrown,
-    };
-
-    try {
-      const response = await fetch("/submit_attempt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Response status: ${response.status}, 
-                    Error: ${errorData.message}`);
-      }
-
-      target += 1;
-      updateTargetElement();
-
-      input.value = "";
-      input.focus();
-    } catch (error) {
-      console.error(error.message);
-      errorMessage.textContent = `An error has occurred. Please try again.`;
-    }
+  function addAttempt() {
+    // Append attempt to throwsData
+    // throwsData = {{target: 1, darts_thrown: 1}, {target: 2, darts_thrown: 3}}
+    target += 1;
+    updateTargetElement();
+    input.value = "";
+    input.focus();
   }
 
-  async function undoSubmit() {
-    errorMessage.textContent = "";
-
-    let removeTarget = target - 1;
-    const data = {
-      session_id: sessionID,
-      target: removeTarget,
-    };
-
-    try {
-      const response = await fetch("/undo_attempt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Response status: ${response.status}, 
-                    Error: ${errorData.message}`);
-      }
-
-      target -= 1;
-      updateTargetElement();
-
-      errorMessage.textContent = `Try deleted. Please re-enter the number of darts
+  function undoAttempt() {
+    // Remove from throwsData
+    target -= 1;
+    updateTargetElement;
+    errorMessage.textContent = `Try deleted. Please re-enter the number of darts
             thrown at target ${target}.`;
-    } catch (error) {
-      console.error(error.message);
-      errorMessage.textContent = `An error has occurred. Please try again.`;
-    }
   }
 });

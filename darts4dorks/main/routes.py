@@ -48,102 +48,21 @@ def round_the_clock():
     )
 
 
-@bp.route("/submit_attempt", methods=["POST"])
-@login_required
-def submit_attempt():
-    data = request.get_json()
-    session_id = data["session_id"]
-    target = data["target"]
-    darts_thrown = data["darts_thrown"]
-
-    try:
-        session_id = int(data["session_id"])
-        target = int(data["target"])
-        darts_thrown = int(data["darts_thrown"])
-    except (KeyError, TypeError) as e:
-        return {"success": False, "message": str(e)}, 400
-
-    session = db.session.get(Session, session_id)
-    if not session or current_user.id != session.user_id:
-        return {"success": False, "message": "Unauthorized session access."}, 403
-
-    if darts_thrown < 1 or target < 1:
-        return {"success": False, "message": "Invalid values."}, 400
-
-    attempt = Attempt(
-        target=target,
-        darts_thrown=darts_thrown,
-        session_id=session_id,
-    )
-    db.session.add(attempt)
-
-    try:
-        db.session.commit()
-        return {"success": True, "message": "Attempt successfully saved."}, 201
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        current_app.logger.exception("Database commit failed")
-        return {"success": False, "message": "An internal error occurred."}, 500
-
-
-@bp.route("/undo_attempt", methods=["POST"])
-@login_required
-def undo_attempt():
-    data = request.get_json()
-    session_id = data["session_id"]
-    target = data["target"]
-
-    try:
-        session_id = int(data["session_id"])
-        target = int(data["target"])
-    except (KeyError, TypeError) as e:
-        return {"success": False, "message": str(e)}, 400
-
-    session = db.session.get(Session, session_id)
-    if not session or current_user.id != session.user_id:
-        return {"success": False, "message": "Unauthorized session access."}, 403
-
-    attempt = db.session.scalar(
-        db.select(Attempt).where(
-            Attempt.session_id == session_id, Attempt.target == target
-        )
-    )
-
-    if not attempt:
-        return {"success": False, "message": "Attempt not found."}, 404
-
-    db.session.delete(attempt)
-
-    try:
-        db.session.commit()
-        return {"success": True, "message": "Attempt successfully deleted."}, 201
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        current_app.logger.exception("Database commit failed")
-        return {"success": False, "message": "An internal error occurred."}, 500
-
-
-@bp.route("/redirect_game_over", methods=["POST"])
+@bp.route("/submit_game", methods=["POST"])
 @login_required
 def redirect_game_over():
     data = request.get_json()
     session_id = data["session_id"]
+    throws_data = data["throws_data"]
 
-    try:
-        session_id = int(data["session_id"])
-    except (KeyError, TypeError) as e:
-        return {"success": False, "message": str(e)}, 400
-
-    session = db.session.get(Session, session_id)
-    if not session or current_user.id != session.user_id:
-        return {"success": False, "message": "Unauthorized session access."}, 403
-
-    session.ended = True
+    # Data validation
+    # Process data (add session ID)
+    # Bulk insert
 
     try:
         db.session.commit()
         url = url_for("main.game_over", session_id=session_id)
-        return {"success": True, "url": url}, 200
+        return {"success": True, "url": url, "message": "Game successfully saved."}, 200
     except SQLAlchemyError as e:
         db.session.rollback()
         current_app.logger.exception("Database commit failed")
