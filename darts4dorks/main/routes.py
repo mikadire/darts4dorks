@@ -1,5 +1,5 @@
 from flask import render_template, flash, request, url_for, redirect, abort, current_app
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user
 from sqlalchemy.exc import SQLAlchemyError
 from darts4dorks import db
 from darts4dorks.main import bp
@@ -17,7 +17,8 @@ def index():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash("Your account has been created.", "success")
+        flash("Your account has been created. You are now logged in.", "success")
+        login_user(user)
         return redirect(url_for("auth.login"))
     return render_template("index.html", form=form)
 
