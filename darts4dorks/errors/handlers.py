@@ -10,6 +10,7 @@ def wants_json_response():
         >= request.accept_mimetypes["text/html"]
     )
 
+
 @bp.app_errorhandler(403)
 def forbidden_error(error):
     if wants_json_response():
@@ -22,6 +23,13 @@ def not_found_error(error):
     if wants_json_response():
         return api_error_response(404)
     return render_template("errors/404.html"), 404
+
+
+@bp.app_errorhandler(405)
+def not_found_error(error):
+    if wants_json_response():
+        return api_error_response(405)
+    return render_template("errors/405.html"), 405
 
 
 @bp.app_errorhandler(500)

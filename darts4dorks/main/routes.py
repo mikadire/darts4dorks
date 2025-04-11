@@ -1,5 +1,6 @@
-from flask import render_template, flash, request, url_for, redirect, abort
+from flask import render_template, flash, request, url_for, redirect, abort, current_app
 from flask_login import current_user, login_required
+from sqlalchemy.exc import SQLAlchemyError
 from darts4dorks import db
 from darts4dorks.main import bp
 from darts4dorks.models import User, Session, Attempt
@@ -58,15 +59,15 @@ def submit_attempt():
         session_id = int(data["session_id"])
         target = int(data["target"])
         darts_thrown = int(data["darts_thrown"])
-    except (ValueError, TypeError):
-        return {"success": False, "message": "Invalid data types."}, 400
+    except (KeyError, TypeError) as e:
+        return {"success": False, "message": str(e)}, 400
 
     session = db.session.get(Session, session_id)
     if not session or current_user.id != session.user_id:
-        return {"success": False, "message": "Unauthorized session access"}, 403
+        return {"success": False, "message": "Unauthorized session access."}, 403
 
     if darts_thrown < 1 or target < 1:
-        return {"success": False, "message": "Invalid values"}, 400
+        return {"success": False, "message": "Invalid values."}, 400
 
     attempt = Attempt(
         target=target,
@@ -78,9 +79,10 @@ def submit_attempt():
     try:
         db.session.commit()
         return {"success": True, "message": "Attempt successfully saved."}, 201
-    except Exception as e:
+    except SQLAlchemyError as e:
         db.session.rollback()
-        return {"success": False, "message": str(e)}, 500
+        current_app.logger.exception("Database commit failed")
+        return {"success": False, "message": "An internal error occurred."}, 500
 
 
 @bp.route("/undo_attempt", methods=["POST"])
@@ -93,12 +95,12 @@ def undo_attempt():
     try:
         session_id = int(data["session_id"])
         target = int(data["target"])
-    except (ValueError, TypeError):
-        return {"success": False, "message": "Invalid data types."}, 400
+    except (KeyError, TypeError) as e:
+        return {"success": False, "message": str(e)}, 400
 
     session = db.session.get(Session, session_id)
     if not session or current_user.id != session.user_id:
-        return {"success": False, "message": "Unauthorized session access"}, 403
+        return {"success": False, "message": "Unauthorized session access."}, 403
 
     attempt = db.session.scalar(
         db.select(Attempt).where(
@@ -113,10 +115,11 @@ def undo_attempt():
 
     try:
         db.session.commit()
-        return {"success": True, "message": "Attempt successfully deleted."}, 200
-    except Exception as e:
+        return {"success": True, "message": "Attempt successfully deleted."}, 201
+    except SQLAlchemyError as e:
         db.session.rollback()
-        return {"success": False, "message": str(e)}, 500
+        current_app.logger.exception("Database commit failed")
+        return {"success": False, "message": "An internal error occurred."}, 500
 
 
 @bp.route("/redirect_game_over", methods=["POST"])
@@ -127,12 +130,12 @@ def redirect_game_over():
 
     try:
         session_id = int(data["session_id"])
-    except (KeyError, ValueError, TypeError):
-        return {"success": False, "message": "Invalid or missing session ID"}, 400
+    except (KeyError, TypeError) as e:
+        return {"success": False, "message": str(e)}, 400
 
     session = db.session.get(Session, session_id)
     if not session or current_user.id != session.user_id:
-        return {"success": False, "message": "Unauthorized session access"}, 403
+        return {"success": False, "message": "Unauthorized session access."}, 403
 
     session.ended = True
 
@@ -140,9 +143,10 @@ def redirect_game_over():
         db.session.commit()
         url = url_for("main.game_over", session_id=session_id)
         return {"success": True, "url": url}, 200
-    except Exception as e:
+    except SQLAlchemyError as e:
         db.session.rollback()
-        return {"success": False, "message": str(e)}, 500
+        current_app.logger.exception("Database commit failed")
+        return {"success": False, "message": "An internal error has occurred."}, 500
 
 
 @bp.route("/game_over/<int:session_id>")
