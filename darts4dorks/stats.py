@@ -15,6 +15,7 @@ def get_rtc_stats(user_id):
         .join(Session)
         .where(Session.user_id == user_id, Session.ended == True)
         .group_by(Attempt.session_id)
+        .order_by(Session.end_time)
     ).all()
 
     temporal_session_stats_json = [
@@ -32,7 +33,7 @@ def get_rtc_stats(user_id):
         db.select(Session.id, Session.end_time, Attempt.target, Attempt.darts_thrown)
         .join(Session)
         .where(Session.user_id == user_id, Session.ended == True)
-        .order_by(Session.id.desc(), Attempt.target)
+        .order_by(Session.end_time, Attempt.target)
     ).all()
 
     temporal_target_stats_json = [
@@ -44,12 +45,15 @@ def get_rtc_stats(user_id):
         db.select(func.avg(Attempt.darts_thrown), func.stddev(Attempt.darts_thrown))
         .join(Session)
         .where(Session.user_id == user_id)
-    ).first()
+    ).one()
 
-    lifetime_stats_json = {
-        "avg_darts_thrown": float(lifetime_stats[0]),
-        "stddev_darts_thrown": lifetime_stats[1],
-    }
+    if lifetime_stats[0] is not None:
+        lifetime_stats_json = {
+            "avg_darts_thrown": float(lifetime_stats[0]),
+            "stddev_darts_thrown": lifetime_stats[1],
+        }
+    else:
+        lifetime_stats_json = []
 
     lifetime_target_stats = db.session.execute(
         db.select(
