@@ -1,9 +1,11 @@
 from flask import render_template, flash, request, url_for, redirect, abort, current_app
 from flask_login import current_user, login_required, login_user
 from sqlalchemy.exc import SQLAlchemyError
+from pydantic import ValidationError
 from darts4dorks import db
 from darts4dorks.main import bp
 from darts4dorks.models import User, Session, Attempt
+from darts4dorks.utils import RtcAttempt, RtcRequest
 from darts4dorks.stats import get_rtc_stats
 from darts4dorks.auth.forms import RegistrationForm
 
@@ -50,14 +52,27 @@ def round_the_clock():
 
 @bp.route("/submit_game", methods=["POST"])
 @login_required
-def redirect_game_over():
-    data = request.get_json()
-    session_id = data["session_id"]
-    throws_data = data["throws_data"]
+def submit_game():
+    try:
+        data = RtcRequest.model_validate(request.get_json())
+    except ValidationError as e:
+        return {"success": False, "errors": e.errors()}, 400
 
-    # Data validation
-    # Process data (add session ID)
-    # Bulk insert
+    session_id = data.session_id
+    session = db.session.get(Session, session_id)
+    if not session or not session.ended or current_user.id != session.user_id:
+        return {"success": False, "message": "Session not found."}, 404
+
+    attempts = [
+        Attempt(
+            target=attempt.target,
+            darts_thrown=attempt.darts_thrown,
+            session_id=session_id,
+        )
+        for attempt in data.attempts_data
+    ]
+    db.session.add_all(attempts)
+    session.ended = True
 
     try:
         db.session.commit()
@@ -74,10 +89,7 @@ def redirect_game_over():
 def game_over(session_id):
     session = db.session.get(Session, session_id)
 
-    if current_user.id != session.user_id:
-        abort(403)
-
-    if not session or not session.ended:
+    if not session or not session.ended or current_user.id != session.user_id:
         abort(404)
 
     stats = get_rtc_stats(current_user.id)

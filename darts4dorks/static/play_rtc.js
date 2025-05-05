@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("error-message");
   const undoButton = document.getElementById("undo-button");
   let target = startTarget;
-  let throwsData = [];
+  let attemptsData = [];
 
   updateTargetElement();
   input.focus();
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function endGame() {
     try {
-      const data = { session_id: sessionID, throws_data: throwsData };
+      const data = { session_id: sessionID, attempts_data: attemptsData };
 
       const response = await fetch("/submit_game", {
         method: "POST",
@@ -41,18 +41,25 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(data),
       });
 
-      if (!response.success) {
+      if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`Response status: ${response.status}, 
-                    Error: ${errorData.message}`);
+        const errorText =
+          errorData.message || JSON.stringify(errorData.errors || errorData);
+        throw new Error(
+          `Response status: ${response.status}, Error: ${errorText}`
+        );
       }
 
       const result = await response.json();
       if (result.success) {
         window.location.replace(result.url);
+      } else {
+        undoAttempt();
+        errorMessage.textContent = `An error has occurred. Please try again.`;
       }
     } catch (error) {
       console.error(error.message);
+      undoAttempt();
       errorMessage.textContent = `An error has occurred. Please try again.`;
     }
   }
@@ -73,10 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
       darts_thrown: dartsThrown,
     };
 
-    throwsData.push(attempt);
+    attemptsData.push(attempt);
 
     // Testing
-    console.log(throwsData);
+    console.log(attemptsData);
     // Testing
 
     target += 1;
@@ -87,14 +94,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function undoAttempt() {
     // Removes last attempt
-    throwsData.pop();
+    attemptsData.pop();
 
     // Testing
-    console.log(throwsData);
+    console.log(attemptsData);
     // Testing
 
     target -= 1;
-    updateTargetElement;
+    updateTargetElement();
     errorMessage.textContent = `Try deleted. Please re-enter the number of darts
             thrown at target ${target}.`;
   }

@@ -6,7 +6,8 @@
 
 - Database design and normalization
 - CRUD operations
-- Web application security e.g. CSRF and XSS
+- Web application security e.g. CSRF, authorization
+- JSON validation and parsing
 - Containerization/Docker
 - Web servers and reverse proxies
 - Networking basics
@@ -22,7 +23,7 @@
 
 ## Tech Stack
 
-- **Backend:** Flask, SQLAlchemy
+- **Backend:** Flask, SQLAlchemy, Alembic, Pydantic
 - **Frontend:** Bootstrap 5
 - **Database:** MySQL or SQLite
 - **Deployment:** Gunicorn, Nginx, Docker
