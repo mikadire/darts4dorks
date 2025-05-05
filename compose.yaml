@@ -15,8 +15,7 @@ services:
       - data:/var/lib/mysql
 
   darts4dorks:
-    image: darts4dorks:latest
-    build: .
+    image: darts4dorks:latest 
     pull_policy: build
     container_name: darts4dorks
     restart: unless-stopped

@@ -1,6 +1,16 @@
 # Darts4Dorks
 
-**darts4dorks** is a Flask-based web application designed for tracking your darts progress. This project was created for learning purposes and serves as part of my portfolio to showcase backend development skills.
+**darts4dorks** is a Flask-based web application designed for tracking your darts progress. This is a fully featured CRUD app created for learning purposes. The app is selfhosted and can be visited at www.dart4dorks.com.
+
+## Learned Skills/Technologies
+
+- Database design and normalization
+- CRUD operations
+- Web application security e.g. CSRF and XSS
+- Containerization/Docker
+- Web servers and reverse proxies
+- Networking basics
+- Cloudflare
 
 ## Features
 
