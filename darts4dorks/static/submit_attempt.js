@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("error-message");
   const undoButton = document.getElementById("undo-button");
   let target = startTarget;
-  let throwsData = {};
+  let throwsData = [];
 
   updateTargetElement();
   input.focus();
@@ -58,8 +58,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function addAttempt() {
-    // Append attempt to throwsData
-    // throwsData = {{target: 1, darts_thrown: 1}, {target: 2, darts_thrown: 3}}
+    errorMessage.textContent = "";
+
+    const dartsThrown = parseInt(input.value);
+
+    if (isNaN(dartsThrown) || dartsThrown < 1) {
+      errorMessage.textContent = `How did you manage that? Most people need
+            1 or more darts to hit their target.`;
+      return;
+    }
+
+    const attempt = {
+      target: target,
+      darts_thrown: dartsThrown,
+    };
+
+    throwsData.push(attempt);
+
+    // Testing
+    console.log(throwsData);
+    // Testing
+
     target += 1;
     updateTargetElement();
     input.value = "";
@@ -67,7 +86,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function undoAttempt() {
-    // Remove from throwsData
+    // Removes last attempt
+    throwsData.pop();
+
+    // Testing
+    console.log(throwsData);
+    // Testing
+
     target -= 1;
     updateTargetElement;
     errorMessage.textContent = `Try deleted. Please re-enter the number of darts
