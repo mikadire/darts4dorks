@@ -4,8 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("dart-form");
   const errorMessage = document.getElementById("error-message");
   const undoButton = document.getElementById("undo-button");
-  let target = startTarget;
-  let attemptsData = [];
+
+  let attemptsData = JSON.parse(localStorage.getItem("attemptsData")) || [];
+  let target = parseInt(localStorage.getItem("target")) || 1;
 
   updateTargetElement();
   input.focus();
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function endGame() {
     try {
-      const data = { session_id: sessionID, attempts_data: attemptsData };
+      const data = attemptsData;
 
       const response = await fetch("/submit_game", {
         method: "POST",
@@ -52,14 +53,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await response.json();
       if (result.success) {
+        localStorage.removeItem("attemptsData");
+        localStorage.removeItem("target");
+
         window.location.replace(result.url);
       } else {
         undoAttempt();
         errorMessage.textContent = `An error has occurred. Please try again.`;
       }
     } catch (error) {
-      console.error(error.message);
       undoAttempt();
+      console.error(error.message);
       errorMessage.textContent = `An error has occurred. Please try again.`;
     }
   }
@@ -81,26 +85,23 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     attemptsData.push(attempt);
-
-    // Testing
-    console.log(attemptsData);
-    // Testing
-
     target += 1;
+
+    localStorage.setItem("attemptsData", JSON.stringify(attemptsData));
+    localStorage.setItem("target", target.toString());
+
     updateTargetElement();
     input.value = "";
     input.focus();
   }
 
   function undoAttempt() {
-    // Removes last attempt
     attemptsData.pop();
-
-    // Testing
-    console.log(attemptsData);
-    // Testing
-
     target -= 1;
+
+    localStorage.setItem("attemptsData", JSON.stringify(attemptsData));
+    localStorage.setItem("target", target.toString());
+
     updateTargetElement();
     errorMessage.textContent = `Try deleted. Please re-enter the number of darts
             thrown at target ${target}.`;

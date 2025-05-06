@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from darts4dorks import db
 from darts4dorks.main import bp
 from darts4dorks.models import User, Session, Attempt
-from darts4dorks.utils import RtcAttempt, RtcRequest
+from darts4dorks.utils import validate_rtc_data
 from darts4dorks.stats import get_rtc_stats
 from darts4dorks.auth.forms import RegistrationForm
 
@@ -28,25 +28,9 @@ def index():
 @bp.route("/round_the_clock")
 @login_required
 def round_the_clock():
-    user_id = current_user.id
-    result = current_user.get_active_session_and_target()
-    if result is None:
-        session = current_user.create_session()
-        db.session.commit()
-        target = 1
-    else:
-        flash("You had an existing game going.", "info")
-        session, target = result
-        if target is None:
-            target = 1
-        else:
-            target += 1
     return render_template(
         "round_the_clock.html",
         title="Round the Clock",
-        user_id=user_id,
-        session_id=session.id,
-        target=target,
     )
 
 
@@ -54,14 +38,13 @@ def round_the_clock():
 @login_required
 def submit_game():
     try:
-        data = RtcRequest.model_validate(request.get_json())
+        data = validate_rtc_data(request.get_json())
     except ValidationError as e:
         return {"success": False, "errors": e.errors()}, 400
 
-    session_id = data.session_id
-    session = db.session.get(Session, session_id)
-    if not session or not session.ended or current_user.id != session.user_id:
-        return {"success": False, "message": "Session not found."}, 404
+    session = current_user.create_session()
+    session_id = session.id
+    session.ended = True
 
     attempts = [
         Attempt(
@@ -69,10 +52,9 @@ def submit_game():
             darts_thrown=attempt.darts_thrown,
             session_id=session_id,
         )
-        for attempt in data.attempts_data
+        for attempt in data
     ]
     db.session.add_all(attempts)
-    session.ended = True
 
     try:
         db.session.commit()

@@ -25,7 +25,5 @@
   </div>
 </div>
 
-<script>const startTarget = {{ target | tojson }};</script>
-<script>const sessionID = {{ session_id | tojson }};</script>
 <script src="{{ url_for('static', filename='play_rtc.js') }}"></script>
 {% endblock %}
