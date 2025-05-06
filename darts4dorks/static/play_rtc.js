@@ -5,21 +5,64 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("error-message");
   const undoButton = document.getElementById("undo-button");
 
-  let attemptsData = JSON.parse(localStorage.getItem("attemptsData")) || [];
-  let target = parseInt(localStorage.getItem("target")) || 1;
+  const resumeModalElement = document.getElementById("resume-modal");
+  const resumeYes = document.getElementById("resume-yes");
+  const resumeNo = document.getElementById("resume-no");
 
-  updateTargetElement();
-  input.focus();
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    addAttempt();
+  const resumeModal = new bootstrap.Modal(resumeModalElement, {
+    backdrop: "static",
+    keyboard: false,
   });
 
-  undoButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    undoAttempt();
-  });
+  let target = 1;
+  let attemptsData = [];
+
+  const savedProgress = localStorage.getItem("darts-progress");
+
+  if (savedProgress) {
+    resumeModal.show();
+
+    resumeYes.addEventListener("click", () => {
+      try {
+        const parsed = JSON.parse(savedProgress);
+        if (
+          typeof parsed.target === "number" &&
+          Array.isArray(parsed.attemptsData)
+        ) {
+          target = parsed.target;
+          attemptsData = parsed.attemptsData;
+        }
+      } catch (e) {
+        console.error("Corrupt progress in localStorage:", e);
+        localStorage.removeItem("darts-progress");
+      }
+      resumeModal.hide();
+      initializeGame();
+    });
+
+    resumeNo.addEventListener("click", () => {
+      localStorage.removeItem("darts-progress");
+      resumeModal.hide();
+      initializeGame();
+    });
+  } else {
+    initializeGame();
+  }
+
+  function initializeGame() {
+    updateTargetElement();
+    input.focus();
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      addAttempt();
+    });
+
+    undoButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      undoAttempt();
+    });
+  }
 
   function updateTargetElement() {
     if (target === 22) {
@@ -30,6 +73,14 @@ document.addEventListener("DOMContentLoaded", () => {
       targetElement.textContent = target;
     }
     undoButton.disabled = target <= 1;
+  }
+
+  function saveProgressToLocalStorage() {
+    const progress = {
+      target,
+      attemptsData,
+    };
+    localStorage.setItem("darts-progress", JSON.stringify(progress));
   }
 
   async function endGame() {
@@ -52,10 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const result = await response.json();
-      if (result.success) {
-        localStorage.removeItem("attemptsData");
-        localStorage.removeItem("target");
 
+      if (result.success) {
+        localStorage.removeItem("darts-progress");
         window.location.replace(result.url);
       } else {
         undoAttempt();
@@ -86,9 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     attemptsData.push(attempt);
     target += 1;
-
-    localStorage.setItem("attemptsData", JSON.stringify(attemptsData));
-    localStorage.setItem("target", target.toString());
+    saveProgressToLocalStorage();
 
     updateTargetElement();
     input.value = "";
@@ -96,11 +144,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function undoAttempt() {
+    if (attemptsData.length === 0) return;
+
     attemptsData.pop();
     target -= 1;
 
-    localStorage.setItem("attemptsData", JSON.stringify(attemptsData));
-    localStorage.setItem("target", target.toString());
+    saveProgressToLocalStorage();
 
     updateTargetElement();
     errorMessage.textContent = `Try deleted. Please re-enter the number of darts
