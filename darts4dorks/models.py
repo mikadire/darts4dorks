@@ -42,6 +42,7 @@ class User(db.Model, UserMixin):
     def create_session(self):
         session = Session(owner=self)
         db.session.add(session)
+        db.session.flush()
         return session
 
     def get_active_session_and_target(self):

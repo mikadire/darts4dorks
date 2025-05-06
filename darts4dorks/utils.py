@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Annotated, List
+from typing import Annotated
 from pydantic import BaseModel, Field
 
 
@@ -20,6 +20,5 @@ class RtcAttempt(BaseModel):
     darts_thrown: Annotated[int, Field(ge=1)]
 
 
-class RtcRequest(BaseModel):
-    session_id: int
-    attempts_data: List[RtcAttempt]
+def validate_rtc_data(data: list[dict]):
+    return [RtcAttempt(**attempt) for attempt in data]
