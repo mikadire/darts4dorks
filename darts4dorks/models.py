@@ -102,7 +102,9 @@ class Session(db.Model):
         onupdate=func.now()
     )  # Initially None, updated to server time when ended is set to True
     ended: Mapped[bool] = mapped_column(default=False, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey(User.id, name="fk_session_user_id_user"), index=True
+    )
 
     owner: Mapped[User] = relationship(back_populates="sessions")
     attempts: Mapped[List["Attempt"]] = relationship(
@@ -122,7 +124,10 @@ class Attempt(db.Model):
     target: Mapped[int]
     darts_thrown: Mapped[int]
     session_id: Mapped[int] = mapped_column(
-        ForeignKey(Session.id, ondelete="CASCADE"), index=True
+        ForeignKey(
+            Session.id, name="fk_attempt_session_id_session", ondelete="CASCADE"
+        ),
+        index=True,
     )
 
     session: Mapped[Session] = relationship(back_populates="attempts")
