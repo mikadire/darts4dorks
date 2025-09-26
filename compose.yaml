@@ -28,6 +28,8 @@ services:
       - mysql
     networks:
       - network
+    volumes:
+      - ./logs:/logs
 
 volumes:
   data:
