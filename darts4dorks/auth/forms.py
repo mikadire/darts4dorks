@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email, ValidationError, EqualTo
+from wtforms import BooleanField, PasswordField, StringField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
+
 from darts4dorks import db
 from darts4dorks.models import User
 
@@ -13,9 +14,9 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    username = StringField("Username", validators=[DataRequired(), Length(max=32)])
+    email = StringField("Email", validators=[DataRequired(), Email(), Length(max=128)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(max=256)])
     confirm_password = PasswordField(
         "Confirm Password", validators=[DataRequired(), EqualTo("password")]
     )
@@ -30,7 +31,7 @@ class RegistrationForm(FlaskForm):
 
     def validate_email(self, email):
         user = db.session.scalar(db.select(User).where(User.email == email.data))
-        if user:
+        if user is not None:
             raise ValidationError("Please use a different email address.")
 
 
@@ -40,7 +41,7 @@ class ResetPasswordRequestForm(FlaskForm):
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField("Password", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired(), Length(max=256)])
     confirm_password = PasswordField(
         "Confirm Password", validators=[DataRequired(), EqualTo("password")]
     )
