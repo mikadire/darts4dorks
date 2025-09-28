@@ -38,35 +38,35 @@ Ensure you have Python 3.x installed.
 
 1. Clone the repository:
 
-```sh
-git clone https://github.com/yourusername/darts4dorks.git
-cd darts4dorks
-```
+   ```sh
+   git clone https://github.com/yourusername/darts4dorks.git
+   cd darts4dorks
+   ```
 
 2. Create and activate a virtual environment:
 
-```sh
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+   ```sh
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
 3. Install dependencies:
 
-```sh
-pip install -r requirements.txt
-```
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 4. Set up the database:
 
-```sh
-flask db upgrade
-```
+   ```sh
+   flask db upgrade
+   ```
 
 5. Run the application locally:
 
-```sh
-flask run
-```
+   ```sh
+   flask run
+   ```
 
 6. Navigate to `http://127.0.0.1:5000/` to access the app.
 
@@ -78,24 +78,24 @@ The above setup runs the application on a builtin development server and a SQLit
 
 2. Create a `.env` file in the project root and configure the following variables:
 
-```sh
-SECRET_KEY=<secret-key>
-DATABASE_URL=mysql+pymysql://<db-username>:<db-password>@mysql/darts4dorks
-MYSQL_DATABASE=darts4dorks
-MYSQL_RANDOM_ROOT_PASSWORD=yes
-MYSQL_USER=<db-username>
-MYSQL_PASSWORD=<db-password>
-```
+   ```sh
+   SECRET_KEY=<secret-key>
+   DATABASE_URL=mysql+pymysql://<db-username>:<db-password>@mysql/darts4dorks
+   MYSQL_DATABASE=darts4dorks
+   MYSQL_RANDOM_ROOT_PASSWORD=yes
+   MYSQL_USER=<db-username>
+   MYSQL_PASSWORD=<db-password>
+   ```
 
-For email support:
+   For email support:
 
-```sh
-MAIL_SERVER=
-MAIL_PORT=
-MAIL_USE_TLS=
-MAIL_USERNAME=
-MAIL_PASSWORD=
-```
+   ```sh
+   MAIL_SERVER=
+   MAIL_PORT=
+   MAIL_USE_TLS=
+   MAIL_USERNAME=
+   MAIL_PASSWORD=
+   ```
 
 3. Run the application using Docker Compose:
 

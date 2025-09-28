@@ -1,13 +1,15 @@
-import os
 import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
-from flask import Flask, url_for
+import os
+from logging.handlers import RotatingFileHandler, SMTPHandler
+
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask import Flask, url_for
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
 from config import Config
 from darts4dorks.utils import StdDev
 
@@ -21,7 +23,7 @@ mail = Mail()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
